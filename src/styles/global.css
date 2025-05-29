@@ -1,0 +1,20 @@
+@font-face {
+  font-family: "Korean Air Sans Bold";
+  font-display: swap;
+  font-weight: 700;
+  src: url("src/styles/font/KoreanAirSansKR_W_Bd.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Korean Air Sans Regular";
+  font-display: swap;
+  font-weight: 400;
+  src: url("src/styles/font/KoreanAirSansKR_W_Bd.woff2") format("woff2");
+}
+
+*,
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}

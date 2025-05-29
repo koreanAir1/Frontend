@@ -12,7 +12,7 @@ const CustomHeader = () => {
           <Logo src="/assets/images/logo.svg" alt="logo" />
           <CustomText
             text={"Korean Air"}
-            fontFamily={"Korean Air Sans Bold"}
+            fontFamily={"Korean-Air-Sans-Bold"}
             fontSize={"1.5rem"}
             color={COLORS.BLUE}
           />
@@ -32,7 +32,7 @@ const HeaderContainer = styled.div`
 `;
 
 const Container = styled.div`
-  padding: 1rem 2rem;
+  padding: 1vw 2vh;
   box-sizing: border-box;
 `;
 

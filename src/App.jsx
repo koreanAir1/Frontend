@@ -2,6 +2,7 @@ import "./styles/reset.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home";
 import Recommend from "./pages/recommend";
+import Details from "./pages/details";
 import CustomLayout from "./components/layout";
 
 function App() {
@@ -24,6 +25,14 @@ function App() {
             </CustomLayout>
           }
         ></Route>
+        <Route
+          path="/details/:id"
+          element={
+            <CustomLayout>
+              <Details />
+            </CustomLayout>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

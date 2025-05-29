@@ -9,7 +9,7 @@ const CustomHeader = () => {
     <HeaderContainer>
       <Container>
         <Button onClick={() => navigate("/")}>
-          <Logo src="src/assets/images/logo.svg" alt="logo" />
+          <Logo src="/assets/images/logo.svg" alt="logo" />
           <CustomText
             text={"Korean Air"}
             fontFamily={"Korean Air Sans Bold"}

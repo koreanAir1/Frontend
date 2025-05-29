@@ -1,5 +1,5 @@
-import { Modal } from "antd";
-const CustomModal = ({ title, open, setOpen }) => {
+import { Modal } from 'antd';
+const CustomModal = ({ title, open, setOpen, contents }) => {
   const handleOk = () => {
     setOpen(false);
   };
@@ -8,9 +8,7 @@ const CustomModal = ({ title, open, setOpen }) => {
   };
   return (
     <Modal title={title} open={open} onOk={handleOk} onCancel={handleCancel}>
-      <p>Some contents...</p>
-      <p>Some contents...</p>
-      <p>Some contents...</p>
+      {contents}
     </Modal>
   );
 };

@@ -30,7 +30,7 @@ const Container = styled.div`
   justify-content: flex-start;
   gap: 3vw;
 
-  background-color: #ffffff;
+  background-color: ${COLORS.WHITE};
   box-shadow: 0px 0px 25px 0px rgba(0, 0, 0, 0.04);
   border-radius: 16px;
   padding: 3vw 4vh 4vh 4vh;

@@ -20,20 +20,66 @@ const Recommend = () => {
   // 브랜드 블루: Korean Air Yale Blue
   const KA_BLUE = '#154D9E';
 
-  // 전송 버튼 클릭 핸들러: 모달 닫기
+  // 전송 버튼 클릭 핸들러: 모달 닫기 전 콘솔에 선호도 로그
   const handleSend = () => {
+    console.log('선호도 결과:', {
+      selectedFood,
+      salty,
+      spicy,
+      sweet,
+      bland,
+      other,
+    });
     setIsOpen(false);
   };
 
   // 모달이 닫히면 페이지 작성 영역을 표시
   if (!isOpen) {
     return (
-      <div style={{ padding: '20px', fontWeight: 'bold' }}>
-        <h2 style={{ fontSize: '18px', marginBottom: '12px' }}>추천 식당</h2>
+      <div
+        style={{
+          padding: '20px',
+          fontWeight: 'bold',
+          maxWidth: '500px',
+          margin: '0 auto',
+        }}
+      >
+        {/* 제목과 설정 아이콘 */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: '12px',
+          }}
+        >
+          <h2
+            style={{
+              flex: 1,
+              fontSize: '18px',
+              margin: 0,
+              textAlign: 'center',
+            }}
+          >
+            추천 음식
+          </h2>
+          <button
+            type="button"
+            onClick={() => setIsOpen(true)}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '20px',
+              cursor: 'pointer',
+            }}
+            aria-label="선호도 재설정"
+          >
+            ⚙️
+          </button>
+        </div>
         <textarea
           value={pageContent}
           onChange={(e) => setPageContent(e.target.value)}
-          placeholder="여기에 추천식당 AI 연동예정"
+          placeholder="여기에 추천음식 AI 연동예정"
           style={{
             width: '100%',
             height: '200px',
@@ -44,6 +90,35 @@ const Recommend = () => {
             fontWeight: 'bold',
           }}
         />
+        {/* 입력된 선호 정보 - 한 줄로 표시 */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginTop: '24px',
+            padding: '16px',
+            background: '#f2f7ff',
+            border: `1px solid ${KA_BLUE}`,
+            borderRadius: '12px',
+            width: '100%',
+          }}
+        >
+          {[
+            { label: '선호 음식', value: selectedFood },
+            { label: '짠맛', value: salty },
+            { label: '매운맛', value: spicy },
+            { label: '달다', value: sweet },
+            { label: '싱겁다', value: bland },
+          ].map((item, idx) => (
+            <div key={idx} style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: '14px', color: KA_BLUE }}>
+                {item.label}
+              </div>
+              <div style={{ fontSize: '16px' }}>{item.value}</div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -74,11 +149,27 @@ const Recommend = () => {
           borderRadius: '12px',
         }}
       >
+        {/* 모달 제목 및 설명 */}
+        <h2
+          style={{ fontSize: '18px', marginBottom: '8px', textAlign: 'center' }}
+        >
+          선호음식 저장
+        </h2>
+        <p
+          style={{
+            fontSize: '14px',
+            marginBottom: '16px',
+            textAlign: 'center',
+          }}
+        >
+          선호도 조사 입력 시 AI를 활용한 메뉴 추천을 해드립니다.
+        </p>
+
         {/* 선호 음식 선택 드롭다운 */}
         <div style={{ marginBottom: '16px' }}>
           <label
             htmlFor="food-select"
-            style={{ marginRight: '25px', fontSize: '15px' }}
+            style={{ marginRight: '12px', fontSize: '15px' }}
           >
             선호 음식
           </label>
@@ -96,135 +187,53 @@ const Recommend = () => {
           >
             <option value="밥">밥</option>
             <option value="면">면</option>
-            <option value="고기">고기</option>
+            <option value="육류">고기</option>
+            <option value="해산물">고기</option>
           </select>
         </div>
 
-        {/* 짠맛 슬라이더 */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: '12px',
-          }}
-        >
-          <label htmlFor="salty" style={{ width: '80px', fontSize: '15px' }}>
-            짠맛
-          </label>
-          <input
-            type="range"
-            id="salty"
-            min="0"
-            max="100"
-            value={salty}
-            onChange={(e) => setSalty(Number(e.target.value))}
+        {/* 슬라이더 컴포넌트 반복 생성 */}
+        {[
+          { id: 'salty', label: '짠맛', value: salty, setValue: setSalty },
+          { id: 'spicy', label: '매운맛', value: spicy, setValue: setSpicy },
+          { id: 'sweet', label: '달다', value: sweet, setValue: setSweet },
+          { id: 'bland', label: '싱겁다', value: bland, setValue: setBland },
+        ].map(({ id, label, value, setValue }) => (
+          <div
+            key={id}
             style={{
-              flex: 1,
-              height: '6px',
-              borderRadius: '3px',
-              appearance: 'none',
-              background: `linear-gradient(to right, ${KA_BLUE} ${salty}%, #ccc ${salty}%)`,
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '12px',
             }}
-          />
-          <span style={{ width: '40px', textAlign: 'right', fontSize: '15px' }}>
-            {salty}
-          </span>
-        </div>
+          >
+            <label htmlFor={id} style={{ width: '80px', fontSize: '15px' }}>
+              {label}
+            </label>
+            <input
+              type="range"
+              id={id}
+              min="0"
+              max="100"
+              value={value}
+              onChange={(e) => setValue(Number(e.target.value))}
+              style={{
+                flex: 1,
+                height: '6px',
+                borderRadius: '3px',
+                appearance: 'none',
+                background: `linear-gradient(to right, ${KA_BLUE} ${value}%, #ccc ${value}%)`,
+              }}
+            />
+            <span
+              style={{ width: '40px', textAlign: 'right', fontSize: '15px' }}
+            >
+              {value}
+            </span>
+          </div>
+        ))}
 
-        {/* 매운맛 슬라이더 */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: '12px',
-          }}
-        >
-          <label htmlFor="spicy" style={{ width: '80px', fontSize: '15px' }}>
-            매운맛
-          </label>
-          <input
-            type="range"
-            id="spicy"
-            min="0"
-            max="100"
-            value={spicy}
-            onChange={(e) => setSpicy(Number(e.target.value))}
-            style={{
-              flex: 1,
-              height: '6px',
-              borderRadius: '3px',
-              appearance: 'none',
-              background: `linear-gradient(to right, ${KA_BLUE} ${spicy}%, #ccc ${spicy}%)`,
-            }}
-          />
-          <span style={{ width: '40px', textAlign: 'right', fontSize: '15px' }}>
-            {spicy}
-          </span>
-        </div>
-
-        {/* 달다 슬라이더 */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: '12px',
-          }}
-        >
-          <label htmlFor="sweet" style={{ width: '80px', fontSize: '15px' }}>
-            달다
-          </label>
-          <input
-            type="range"
-            id="sweet"
-            min="0"
-            max="100"
-            value={sweet}
-            onChange={(e) => setSweet(Number(e.target.value))}
-            style={{
-              flex: 1,
-              height: '6px',
-              borderRadius: '3px',
-              appearance: 'none',
-              background: `linear-gradient(to right, ${KA_BLUE} ${sweet}%, #ccc ${sweet}%)`,
-            }}
-          />
-          <span style={{ width: '40px', textAlign: 'right', fontSize: '15px' }}>
-            {sweet}
-          </span>
-        </div>
-
-        {/* 싱겁다 슬라이더 */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: '16px',
-          }}
-        >
-          <label htmlFor="bland" style={{ width: '80px', fontSize: '15px' }}>
-            싱겁다
-          </label>
-          <input
-            type="range"
-            id="bland"
-            min="0"
-            max="100"
-            value={bland}
-            onChange={(e) => setBland(Number(e.target.value))}
-            style={{
-              flex: 1,
-              height: '6px',
-              borderRadius: '3px',
-              appearance: 'none',
-              background: `linear-gradient(to right, ${KA_BLUE} ${bland}%, #ccc ${bland}%)`,
-            }}
-          />
-          <span style={{ width: '40px', textAlign: 'right', fontSize: '15px' }}>
-            {bland}
-          </span>
-        </div>
-
-        {/* 기타 입력 텍스트 박스 및 입력 버튼 */}
+        {/* 기타 입력 텍스트 박스 */}
         <div
           style={{ display: 'flex', alignItems: 'center', marginTop: '16px' }}
         >
@@ -245,20 +254,6 @@ const Recommend = () => {
               flex: 1,
             }}
           />
-          <button
-            type="button"
-            style={{
-              marginLeft: '8px',
-              fontSize: '15px',
-              padding: '8px 16px',
-              borderRadius: '12px',
-              border: '1px solid #ccc',
-              cursor: 'pointer',
-            }}
-            onClick={() => console.log('기타 입력:', other)}
-          >
-            입력
-          </button>
         </div>
 
         {/* 전송 버튼: 모달 닫기 */}
@@ -274,7 +269,7 @@ const Recommend = () => {
             }}
             onClick={handleSend}
           >
-            결재작성
+            전송
           </button>
         </div>
       </div>

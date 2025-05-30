@@ -1,7 +1,5 @@
 import CustomCard from '../../components/card';
 import styled from 'styled-components';
-import { useRecoilValue } from 'recoil';
-import { likeAtomFamily } from '../../stores/atom';
 import { COLORS } from '../../constants';
 import CustomText from '../../components/text';
 import CustomButton from '../../components/button';
@@ -9,11 +7,6 @@ import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const navigate = useNavigate();
-  useRecoilValue(likeAtomFamily(1));
-  useRecoilValue(likeAtomFamily(2));
-  useRecoilValue(likeAtomFamily(3));
-  useRecoilValue(likeAtomFamily(4));
-  useRecoilValue(likeAtomFamily(5));
 
   return (
     <>
@@ -27,20 +20,24 @@ const Home = () => {
               fontSize={'1.3rem'}
             />
             <div style={{ display: 'flex', gap: '3vw' }}>
-              {[1, 2, 3, 4, 5].map((id, index) => (
-                <CustomCard
-                  key={id}
-                  imgUrl={'www.naver.com'}
-                  title={'안유진'}
-                  description={'양재혁'}
-                  id={id}
-                  isRank={true}
-                  rankNumber={index + 1}
-                />
-              ))}
+              {[1, 2, 3, 4, 5].map((id, index) => {
+                return (
+                  <CustomCard
+                    key={id}
+                    imgUrl={'www.naver.com'}
+                    title={'안유진'}
+                    description={'양재혁'}
+                    id={id}
+                    isRank={true}
+                    rankNumber={index + 1}
+                    likeNumber={100}
+                  />
+                );
+              })}
             </div>
           </div>
         </Container>
+
         {[1, 2, 3, 4, 5, 6].map((containerId) => (
           <Container key={containerId}>
             <div
@@ -68,6 +65,7 @@ const Home = () => {
           </Container>
         ))}
       </div>
+
       <div style={{ position: 'fixed', bottom: 30, right: 70, zIndex: 1000 }}>
         <CustomButton
           text={
@@ -91,7 +89,6 @@ const Home = () => {
     </>
   );
 };
-
 const Container = styled.div`
   display: flex;
   align-items: center;

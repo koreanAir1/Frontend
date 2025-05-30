@@ -1,21 +1,66 @@
 import { useRecoilCallback, useRecoilState } from 'recoil';
 import { useNavigate } from 'react-router-dom';
-import { likeAtomFamily } from '../../stores/atom';
+import { likeAtomFamily, likeCountAtomFamily } from '../../stores/atom';
 import { Card } from 'antd';
 import { HeartFilled, HeartOutlined } from '@ant-design/icons';
+import { useEffect } from 'react';
 
 const { Meta } = Card;
 
-const CustomCard = ({ id, imgUrl, title, description, isRank, rankNumber }) => {
+const CustomCard = ({
+  id,
+  imgUrl,
+  title,
+  description,
+  isRank,
+  rankNumber,
+  likeNumber,
+}) => {
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useRecoilState(likeAtomFamily(id));
 
+  // 단순화된 atom 키 사용 (id만 사용)
+  const [likeCount, setLikeCount] = useRecoilState(likeCountAtomFamily(id));
+
+  // 초기값 설정 - 컴포넌트 마운트 시 한 번만
+  useEffect(() => {
+    setLikeCount((prevCount) => {
+      // 이미 설정된 값이 있으면 유지, 없으면 초기값 설정
+      return prevCount === 0 ? likeNumber : prevCount;
+    });
+  }, [likeNumber, setLikeCount]);
+
   const toggleLike = useRecoilCallback(
-    ({ set }) =>
-      (e) => {
+    ({ set, snapshot }) =>
+      async (e) => {
         e.stopPropagation();
-        for (let i = 1; i <= 4; i++) {
-          set(likeAtomFamily(i), i === id);
+
+        // 현재 카드만 토글하고, 다른 카드들의 좋아요는 해제하면서 숫자도 -1
+        for (let i = 0; i <= 5; i++) {
+          const isCurrent = i === id;
+
+          if (isCurrent) {
+            // 현재 카드의 좋아요 토글
+            const prevLiked = await snapshot.getPromise(likeAtomFamily(i));
+            const prevCount = await snapshot.getPromise(likeCountAtomFamily(i));
+
+            const newLiked = !prevLiked;
+            set(likeAtomFamily(i), newLiked);
+            set(
+              likeCountAtomFamily(i),
+              newLiked ? prevCount + 1 : prevCount - 1,
+            );
+          } else {
+            // 다른 카드들의 좋아요 해제
+            const prevLiked = await snapshot.getPromise(likeAtomFamily(i));
+            if (prevLiked) {
+              const prevCount = await snapshot.getPromise(
+                likeCountAtomFamily(i),
+              );
+              set(likeAtomFamily(i), false);
+              set(likeCountAtomFamily(i), Math.max(0, prevCount - 1));
+            }
+          }
         }
       },
     [id],
@@ -43,8 +88,8 @@ const CustomCard = ({ id, imgUrl, title, description, isRank, rankNumber }) => {
         position: 'relative',
         display: 'inline-block',
         width: '13vw',
-        maxWidth: 320, // 최대 크기 제한 (필요 시 조절)
-        margin: '0 auto', // 중앙 정렬
+        maxWidth: 320,
+        margin: '0 auto',
       }}
     >
       {isRank && rankNumber && getMedalOrRank(rankNumber) && (
@@ -77,7 +122,7 @@ const CustomCard = ({ id, imgUrl, title, description, isRank, rankNumber }) => {
           <div
             style={{
               width: '100%',
-              aspectRatio: '4 / 3', // 4:3 비율 유지 (Chrome, 최신 브라우저 지원)
+              aspectRatio: '4 / 3',
               overflow: 'hidden',
             }}
           >
@@ -98,17 +143,35 @@ const CustomCard = ({ id, imgUrl, title, description, isRank, rankNumber }) => {
         <Meta title={title} description={description} />
         {isRank && (
           <div
-            onClick={toggleLike}
             style={{
               position: 'absolute',
-              bottom: 15,
+              bottom: 10,
               right: 10,
-              fontSize: 20,
-              color: isLiked ? 'red' : 'gray',
-              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '4px',
             }}
           >
-            {isLiked ? <HeartFilled /> : <HeartOutlined />}
+            <div
+              onClick={toggleLike}
+              style={{
+                fontSize: 20,
+                color: isLiked ? 'red' : 'gray',
+                cursor: 'pointer',
+              }}
+            >
+              {isLiked ? <HeartFilled /> : <HeartOutlined />}
+            </div>
+            <div
+              style={{
+                fontSize: 12,
+                color: '#666',
+                fontWeight: 'bold',
+              }}
+            >
+              {likeCount}
+            </div>
           </div>
         )}
       </Card>

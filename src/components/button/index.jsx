@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from 'styled-components';
 
 const CustomButton = ({
   text,
@@ -13,11 +13,12 @@ const CustomButton = ({
   borderRadius,
   marginTop,
   fontWeight,
+  boxShadow,
 }) => {
   const style = {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
     color: color,
     width: width,
     height: height,
@@ -28,6 +29,7 @@ const CustomButton = ({
     borderRadius: borderRadius,
     marginTop: marginTop,
     fontWeight: fontWeight,
+    boxShadow: boxShadow,
   };
 
   return (

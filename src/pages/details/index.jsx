@@ -119,7 +119,6 @@ const Details = () => {
   );
 
   // Details 컴포넌트: 피드백 팝업만 표시, 선택된 옵션은 콘솔에 출력
-  const KA_BLUE = '#154D9E';
   const [open, setOpen] = useState(false);
   const [selections, setSelections] = useState([]);
 
@@ -302,98 +301,126 @@ const Details = () => {
         )}
       </Container>
 
-      <div
-        style={{ padding: 20, fontFamily: 'Korean Air Sans', color: '#333' }}
-      >
-        {/* 피드백 모달 */}
-        {open && (
+      {open && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+        >
           <div
             style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              background: 'rgba(0,0,0,0.5)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              width: '90%',
+              maxWidth: '500px',
+              background: '#fff',
+              padding: '32px',
+              borderRadius: '16px',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
             }}
           >
-            <div
+            {/* 제목 */}
+            <h3
               style={{
-                background: '#fff',
-                padding: 24,
-                borderRadius: 12,
-                width: 320,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                margin: 0,
+                marginBottom: '24px',
+                color: COLORS.BLUE,
+                fontFamily: 'Korean-Air-Sans-Bold',
+                fontSize: '1.5rem',
+                textAlign: 'left',
               }}
             >
-              <h3 style={{ margin: 0, marginBottom: 16, color: KA_BLUE }}>
-                피드백
-              </h3>
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: 8,
-                  marginBottom: 16,
-                }}
-              >
-                {feedbackOptions.map((opt) => (
+              피드백
+            </h3>
+
+            {/* 옵션 버튼들 */}
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '12px',
+                marginBottom: '32px',
+                justifyContent: 'flex-start',
+              }}
+            >
+              {feedbackOptions.map((opt) => {
+                const isSelected = selections.includes(opt);
+                return (
                   <button
                     key={opt}
                     onClick={() => toggleOption(opt)}
                     style={{
-                      padding: '6px 12px',
-                      borderRadius: 8,
-                      border: selections.includes(opt)
-                        ? `1px solid ${KA_BLUE}`
-                        : `1px solid #ccc`,
-                      background: selections.includes(opt) ? KA_BLUE : '#fff',
-                      color: selections.includes(opt) ? '#fff' : '#333',
+                      padding: '10px 16px',
+                      borderRadius: '12px',
+                      border: isSelected
+                        ? `1px solid ${COLORS.BLUE}`
+                        : '1px solid #ddd',
+                      background: isSelected ? COLORS.BLUE : '#fff',
+                      color: isSelected ? '#fff' : COLORS.BLACK,
+                      fontFamily: 'Korean-Air-Sans-Regular',
+                      fontSize: '14px',
                       cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      whiteSpace: 'nowrap',
                     }}
                   >
                     {opt}
                   </button>
-                ))}
-              </div>
-              <div
-                style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}
+                );
+              })}
+            </div>
+
+            {/* 버튼 영역 */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '12px',
+              }}
+            >
+              <button
+                onClick={handleCancel}
+                style={{
+                  background: COLORS.WHITE,
+                  color: COLORS.BLACK,
+                  border: `1px solid ${COLORS.BTN_BORDER}`,
+                  borderRadius: '24px',
+                  padding: '12px 24px',
+                  fontFamily: 'Korean-Air-Sans-Regular',
+                  fontSize: '15px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
               >
-                <button
-                  onClick={handleCancel}
-                  style={{
-                    background: '#f0f0f0',
-                    color: '#666',
-                    border: 'none',
-                    borderRadius: 8,
-                    padding: '8px 16px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  취소
-                </button>
-                <button
-                  onClick={handleOk}
-                  style={{
-                    background: KA_BLUE,
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 8,
-                    padding: '8px 16px',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                  }}
-                >
-                  Ok
-                </button>
-              </div>
+                취소
+              </button>
+              <button
+                onClick={handleOk}
+                style={{
+                  background: COLORS.BLUE,
+                  color: '#fff',
+                  border: `1px solid ${COLORS.BOX_BORDER}`,
+                  borderRadius: '24px',
+                  padding: '12px 24px',
+                  fontFamily: 'Korean-Air-Sans-Bold',
+                  fontSize: '15px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                전송
+              </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 };

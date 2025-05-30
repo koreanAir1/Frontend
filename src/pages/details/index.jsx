@@ -56,8 +56,28 @@ const Details = () => {
     transitionDuration: 1000,
   };
 
+  // 오늘 날짜 생성 (YYYY년 MM월 DD일 형식)
+  const today = new Date();
+  const todayText = `${today.getFullYear()}년 ${String(
+    today.getMonth() + 1,
+  ).padStart(2, '0')}월 ${String(today.getDate()).padStart(2, '0')}일`;
+
+  const now = new Date();
+  // 이미지 URL과 날짜 확인
+  const imageUrl =
+    'http://k.kakaocdn.net/dn/h5kvR/btsOi8a81Kh/ySgKbU4DHVp12d0Qb7Upj1/img_xl.jpg';
+  const dateText = '2025년 05월 31일';
+  // 현재 날짜와 일치하는지 확인
+  const isToday = dateText === todayText;
+  const shouldShowFeedbackButton = isToday;
+
   // 3초 후 워드클라우드 숨기기
   useEffect(() => {
+    if (!shouldShowFeedbackButton) {
+      // 오늘이 아니면 즉시 워드클라우드 숨기기
+      setShowWordcloud(false);
+      return;
+    }
     const timer = setTimeout(() => {
       setShowWordcloud(false);
     }, 3000);
@@ -104,32 +124,10 @@ const Details = () => {
     setOpen(true);
   };
 
-  // 이미지 URL과 날짜 확인
-  const imageUrl =
-    'http://k.kakaocdn.net/dn/h5kvR/btsOi8a81Kh/ySgKbU4DHVp12d0Qb7Upj1/img_xl.jpg';
-  const dateText = '2025년 05월 30일';
-
-  // 오늘 날짜 생성 (YYYY년 MM월 DD일 형식)
-  const today = new Date();
-  const todayText = `${today.getFullYear()}년 ${String(
-    today.getMonth() + 1,
-  ).padStart(2, '0')}월 ${String(today.getDate()).padStart(2, '0')}일`;
-
-  const now = new Date();
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-
-  // 11:30 ~ 23:59 사이인지 확인
-  const isInRange =
-    (hours === 11 && minutes >= 30) || // 11시 30분 이상
-    (hours > 11 && hours < 24); // 12시부터 23시까지
-
-  const shouldShowFeedbackButton = dateText === todayText && isInRange;
-
   return (
     <>
       {/* 워드클라우드 오버레이 */}
-      {showWordcloud && (
+      {showWordcloud && shouldShowFeedbackButton && (
         <WordcloudOverlay>
           <WordcloudContainer>
             <ReactWordcloud words={wordcloudData} options={wordcloudOptions} />
@@ -137,8 +135,7 @@ const Details = () => {
         </WordcloudOverlay>
       )}
 
-      <Container style={{ opacity: showWordcloud ? 0.3 : 1 }}></Container>
-      <Container>
+      <Container style={{ opacity: showWordcloud ? 0.3 : 1 }}>
         {/* 날짜 헤더 */}
         <DateHeader>
           <CustomText
@@ -163,15 +160,28 @@ const Details = () => {
         {/* 좋아요 섹션 */}
         <LikeSection>
           <LikeContainer
-            onClick={toggleLike}
+            onClick={isToday ? toggleLike : undefined}
             role="button"
             aria-pressed={liked}
+            disabled={!isToday}
           >
-            <HeartIcon liked={liked}>
+            <HeartIcon liked={liked} disabled={!isToday}>
               {liked ? <HeartFilled /> : <HeartOutlined />}
             </HeartIcon>
-            <LikeText liked={liked}>{likeCount}</LikeText>
+            <LikeText liked={liked} disabled={!isToday}>
+              {likeCount}
+            </LikeText>
           </LikeContainer>
+          {!isToday && (
+            <DisabledMessage>
+              <CustomText
+                text={'오늘 메뉴만 좋아요를 누를 수 있어요'}
+                fontFamily={'Korean-Air-Sans-Regular'}
+                fontSize={'0.8rem'}
+                color={COLORS.GRAY}
+              />
+            </DisabledMessage>
+          )}
         </LikeSection>
 
         {/* 제목 섹션 */}
@@ -234,7 +244,7 @@ const Details = () => {
         </InfoSection>
 
         {/* 피드백 버튼 - 조건부 렌더링 */}
-        {shouldShowFeedbackButton && (
+        {shouldShowFeedbackButton ? (
           <FeedbackButton onClick={showModal}>
             <CustomText
               text={'피드백 남기기'}
@@ -243,6 +253,15 @@ const Details = () => {
               color={COLORS.WHITE}
             />
           </FeedbackButton>
+        ) : (
+          <DisabledFeedbackButton>
+            <CustomText
+              text={'오늘 메뉴만 피드백할 수 있어요'}
+              fontFamily={'Korean-Air-Sans-Regular'}
+              fontSize={'1rem'}
+              color={COLORS.GRAY}
+            />
+          </DisabledFeedbackButton>
         )}
       </Container>
 
@@ -321,6 +340,7 @@ const Container = styled.div`
   overflow: hidden;
   border: 1px solid ${COLORS.BOX_BORDER};
   position: relative;
+  transition: opacity 0.5s ease-in-out;
 `;
 
 const DateHeader = styled.div`
@@ -365,43 +385,54 @@ const LikeSection = styled.div`
 `;
 
 const LikeContainer = styled.div`
-  cursor: pointer;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
   user-select: none;
   display: flex;
   align-items: center;
   gap: 1vh;
   padding: 1vh 1.5vh;
   border-radius: 20px;
-  background-color: ${COLORS.WHITE};
+  background-color: ${({ disabled }) => (disabled ? '#f5f5f5' : COLORS.WHITE)};
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
   width: fit-content;
+  opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
+    transform: ${({ disabled }) => (disabled ? 'none' : 'translateY(-2px)')};
+    box-shadow: ${({ disabled }) =>
+      disabled
+        ? '0px 2px 8px rgba(0, 0, 0, 0.06)'
+        : '0px 4px 16px rgba(0, 0, 0, 0.12)'};
   }
 
   &:active {
-    transform: translateY(0px);
+    transform: ${({ disabled }) => (disabled ? 'none' : 'translateY(0px)')};
   }
 `;
 
 const HeartIcon = styled.div`
   font-size: 20px;
-  color: ${({ liked }) => (liked ? '#FF6B6B' : '#9CA3AF')};
+  color: ${({ liked, disabled }) =>
+    disabled ? '#D1D5DB' : liked ? '#FF6B6B' : '#9CA3AF'};
   transition: all 0.3s ease;
 
   &:hover {
-    transform: scale(1.1);
+    transform: ${({ disabled }) => (disabled ? 'none' : 'scale(1.1)')};
   }
 `;
 
 const LikeText = styled.span`
-  color: ${({ liked }) => (liked ? COLORS.BLUE : '#6B7280')};
+  color: ${({ liked, disabled }) =>
+    disabled ? '#D1D5DB' : liked ? COLORS.BLUE : '#6B7280'};
   font-weight: ${({ liked }) => (liked ? '700' : '500')};
   font-size: 0.95rem;
   transition: color 0.3s ease;
+`;
+
+const DisabledMessage = styled.div`
+  margin-top: 1vh;
+  text-align: center;
 `;
 
 const TitleSection = styled.div`
@@ -507,6 +538,17 @@ const FeedbackButton = styled.div`
   &:active {
     transform: translateY(0px);
   }
+`;
+
+const DisabledFeedbackButton = styled.div`
+  margin: 2vh 4vh 4vh 4vh;
+  background: #f5f5f5;
+  border: 2px dashed #d1d5db;
+  padding: 2vh;
+  border-radius: 16px;
+  text-align: center;
+  cursor: not-allowed;
+  opacity: 0.6;
 `;
 
 export default Details;

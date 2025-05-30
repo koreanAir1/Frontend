@@ -19,6 +19,11 @@ const CustomCard = ({
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useRecoilState(likeAtomFamily(id));
 
+  const isEmptyImage = !imgUrl || imgUrl.trim() === '';
+  const displayImageUrl = isEmptyImage
+    ? 'https://www.naver.com/favicon.ico'
+    : imgUrl;
+
   // 단순화된 atom 키 사용 (id만 사용)
   const [likeCount, setLikeCount] = useRecoilState(likeCountAtomFamily(id));
 
@@ -128,7 +133,7 @@ const CustomCard = ({
           >
             <img
               alt="card"
-              src={imgUrl}
+              src={displayImageUrl}
               style={{
                 width: '100%',
                 height: '100%',

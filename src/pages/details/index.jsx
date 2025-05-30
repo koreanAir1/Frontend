@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Image } from 'antd';
 import { HeartFilled, HeartOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
@@ -8,6 +8,7 @@ import { likeAtomFamily, likeCountAtomFamily } from '../../stores/atom';
 import CustomText from '../../components/text';
 import CustomModal from '../../components/modal';
 import { COLORS } from '../../constants';
+import ReactWordcloud from 'react-wordcloud';
 
 const Details = () => {
   const { id } = useParams();
@@ -15,6 +16,54 @@ const Details = () => {
 
   const [liked, setLiked] = useRecoilState(likeAtomFamily(cardId));
   const [likeCount, setLikeCount] = useRecoilState(likeCountAtomFamily(cardId));
+  const [showWordcloud, setShowWordcloud] = useState(true);
+
+  // 워드클라우드 데이터
+  const wordcloudData = [
+    { text: '불고기', value: 80 },
+    { text: '덮밥', value: 70 },
+    { text: '맛있는', value: 60 },
+    { text: '한식', value: 50 },
+    { text: '점심', value: 45 },
+    { text: '잡채', value: 40 },
+    { text: '오이소박이', value: 35 },
+    { text: '메밀전병', value: 30 },
+    { text: '영양', value: 25 },
+    { text: '건강', value: 20 },
+  ];
+
+  // 워드클라우드 옵션
+  const wordcloudOptions = {
+    colors: [
+      COLORS.BLUE,
+      '#FF6B6B',
+      '#4ECDC4',
+      '#45B7D1',
+      '#FFA726',
+      '#AB47BC',
+    ],
+    enableTooltip: true,
+    deterministic: false,
+    fontFamily: 'Korean-Air-Sans-Bold',
+    fontSizes: [20, 80],
+    fontStyle: 'normal',
+    fontWeight: 'bold',
+    padding: 5,
+    rotations: 2,
+    rotationAngles: [0, 90],
+    scale: 'sqrt',
+    spiral: 'archimedean',
+    transitionDuration: 1000,
+  };
+
+  // 3초 후 워드클라우드 숨기기
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowWordcloud(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const toggleLike = useRecoilCallback(
     ({ set, snapshot }) =>
@@ -55,13 +104,45 @@ const Details = () => {
     setOpen(true);
   };
 
+  // 이미지 URL과 날짜 확인
+  const imageUrl =
+    'http://k.kakaocdn.net/dn/h5kvR/btsOi8a81Kh/ySgKbU4DHVp12d0Qb7Upj1/img_xl.jpg';
+  const dateText = '2025년 05월 30일';
+
+  // 오늘 날짜 생성 (YYYY년 MM월 DD일 형식)
+  const today = new Date();
+  const todayText = `${today.getFullYear()}년 ${String(
+    today.getMonth() + 1,
+  ).padStart(2, '0')}월 ${String(today.getDate()).padStart(2, '0')}일`;
+
+  const now = new Date();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+
+  // 11:30 ~ 23:59 사이인지 확인
+  const isInRange =
+    (hours === 11 && minutes >= 30) || // 11시 30분 이상
+    (hours > 11 && hours < 24); // 12시부터 23시까지
+
+  const shouldShowFeedbackButton = dateText === todayText && isInRange;
+
   return (
     <>
+      {/* 워드클라우드 오버레이 */}
+      {showWordcloud && (
+        <WordcloudOverlay>
+          <WordcloudContainer>
+            <ReactWordcloud words={wordcloudData} options={wordcloudOptions} />
+          </WordcloudContainer>
+        </WordcloudOverlay>
+      )}
+
+      <Container style={{ opacity: showWordcloud ? 0.3 : 1 }}></Container>
       <Container>
         {/* 날짜 헤더 */}
         <DateHeader>
           <CustomText
-            text={'2025년 05월 30일'}
+            text={dateText}
             fontFamily={'Korean-Air-Sans-Regular'}
             fontSize={'0.9rem'}
             color={COLORS.GRAY}
@@ -73,7 +154,7 @@ const Details = () => {
           <StyledImage
             width="100%"
             height="100%"
-            src="http://k.kakaocdn.net/dn/h5kvR/btsOi8a81Kh/ySgKbU4DHVp12d0Qb7Upj1/img_xl.jpg"
+            src={imageUrl}
             preview={false}
           />
           <ImageOverlay />
@@ -152,15 +233,17 @@ const Details = () => {
           </InfoCard>
         </InfoSection>
 
-        {/* 피드백 버튼 */}
-        <FeedbackButton onClick={showModal}>
-          <CustomText
-            text={'피드백 남기기'}
-            fontFamily={'Korean-Air-Sans-Bold'}
-            fontSize={'1rem'}
-            color={COLORS.WHITE}
-          />
-        </FeedbackButton>
+        {/* 피드백 버튼 - 조건부 렌더링 */}
+        {shouldShowFeedbackButton && (
+          <FeedbackButton onClick={showModal}>
+            <CustomText
+              text={'피드백 남기기'}
+              fontFamily={'Korean-Air-Sans-Bold'}
+              fontSize={'1rem'}
+              color={COLORS.WHITE}
+            />
+          </FeedbackButton>
+        )}
       </Container>
 
       <CustomModal
@@ -179,6 +262,54 @@ const Details = () => {
     </>
   );
 };
+
+// 워드클라우드 관련 스타일
+const WordcloudOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.5s ease-in-out;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+`;
+
+const WordcloudContainer = styled.div`
+  width: 80vw;
+  height: 60vh;
+  max-width: 800px;
+  max-height: 600px;
+  background-color: white;
+  border-radius: 24px;
+  box-shadow: 0px 16px 64px rgba(0, 0, 0, 0.15);
+  padding: 2rem;
+  animation: scaleIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.3);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+`;
 
 const Container = styled.div`
   display: flex;

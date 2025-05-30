@@ -4,6 +4,8 @@ import { COLORS } from '../../constants';
 import CustomText from '../../components/text';
 import CustomButton from '../../components/button';
 import { useNavigate } from 'react-router-dom';
+import { Tooltip } from 'antd';
+import { LikeOutlined } from '@ant-design/icons';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -69,24 +71,39 @@ const Home = () => {
       </div>
 
       <div style={{ position: 'fixed', bottom: 30, right: 70, zIndex: 1000 }}>
-        <CustomButton
-          text={
-            <CustomText
-              text="식단 추천"
-              fontFamily="Korean-Air-Sans-Regular"
-              color={COLORS.BLACK}
-              fontSize="14px"
+        <Tooltip title="식단 추천하러가기" placement="left">
+          <button
+            onClick={() => navigate('/recommend')}
+            style={{
+              width: '60px',
+              height: '60px',
+              backgroundColor: COLORS.WHITE,
+              border: `2px solid ${COLORS.BORDER}`,
+              borderRadius: '50%',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'scale(1.05)';
+              e.target.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'scale(1)';
+              e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+            }}
+          >
+            <LikeOutlined
+              style={{
+                fontSize: '24px',
+                color: COLORS.BLUE,
+              }}
             />
-          }
-          onClick={() => navigate('/recommend')}
-          width="60px"
-          height="60px"
-          backgroundColor={COLORS.WHITE}
-          borderRadius="50%"
-          borderColor={COLORS.BOX_BORDER}
-          fontWeight="bold"
-          fontSize="14px"
-        />
+          </button>
+        </Tooltip>
       </div>
     </>
   );

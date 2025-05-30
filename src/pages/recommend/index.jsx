@@ -135,49 +135,48 @@ const Recommend = () => {
         left: 0,
         width: '100%',
         height: '100%',
-        background: 'rgba(0,0,0,0.4)',
+        background: 'rgba(0, 0, 0, 0.5)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
-        fontFamily: 'Korean-Air-Sans-Regular',
       }}
     >
       <div
         style={{
           width: '90%',
-          maxWidth: '480px',
+          maxWidth: '460px',
           background: '#ffffff',
           padding: '32px',
           borderRadius: '16px',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
         }}
       >
         {/* 제목 & 설명 */}
-        <div style={{ marginBottom: '24px' }}>
+        <div style={{ marginBottom: '28px' }}>
           <CustomText
             text="선호음식 저장"
             color={COLORS.BLUE}
             fontFamily="Korean-Air-Sans-Bold"
-            fontSize="1.6rem"
+            fontSize="1.5rem"
           />
           <CustomText
             text="선호도 조사 입력 시 AI를 활용한 메뉴 추천을 해드립니다."
             color={COLORS.BLACK}
             fontFamily="Korean-Air-Sans-Regular"
-            fontSize="0.95rem"
-            style={{ marginTop: '8px' }}
+            fontSize="0.9rem"
+            style={{ marginTop: '8px', lineHeight: '1.4' }}
           />
         </div>
 
         {/* 선호 음식 선택 */}
-        <div style={{ marginBottom: '20px' }}>
+        <div style={{ marginBottom: '24px' }}>
           <CustomText
             text="선호 음식"
             color={COLORS.BLACK}
             fontSize="15px"
             fontFamily="Korean-Air-Sans-Regular"
-            style={{ marginBottom: '6px' }}
+            style={{ marginBottom: '8px' }}
           />
           <select
             id="food-select"
@@ -185,11 +184,12 @@ const Recommend = () => {
             onChange={(e) => setSelectedFood(e.target.value)}
             style={{
               fontSize: '15px',
-              padding: '10px',
+              padding: '12px',
               borderRadius: '10px',
               border: '1px solid #ddd',
               width: '100%',
               backgroundColor: '#f9f9f9',
+              outline: 'none',
             }}
           >
             <option value="밥">밥</option>
@@ -199,61 +199,64 @@ const Recommend = () => {
         </div>
 
         {/* 슬라이더 입력 */}
-        {[
-          { id: 'salty', label: '짠맛', value: salty, setValue: setSalty },
-          { id: 'spicy', label: '매운맛', value: spicy, setValue: setSpicy },
-          { id: 'sweet', label: '단맛', value: sweet, setValue: setSweet },
-          { id: 'bland', label: '싱거움', value: bland, setValue: setBland },
-        ].map(({ id, label, value, setValue }) => (
-          <div
-            key={id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '16px',
-              gap: '10px',
-            }}
-          >
-            <CustomText
-              text={label}
-              color={COLORS.BLACK}
-              fontSize="15px"
-              fontFamily="Korean-Air-Sans-Regular"
-              style={{ width: '70px' }}
-            />
-            <input
-              type="range"
-              id={id}
-              min="0"
-              max="100"
-              value={value}
-              onChange={(e) => setValue(Number(e.target.value))}
+        <div style={{ marginBottom: '24px' }}>
+          {[
+            { id: 'salty', label: '짠맛', value: salty, setValue: setSalty },
+            { id: 'spicy', label: '매운맛', value: spicy, setValue: setSpicy },
+            { id: 'sweet', label: '단맛', value: sweet, setValue: setSweet },
+            { id: 'bland', label: '싱거움', value: bland, setValue: setBland },
+          ].map(({ id, label, value, setValue }) => (
+            <div
+              key={id}
               style={{
-                flex: 1,
-                height: '6px',
-                borderRadius: '3px',
-                appearance: 'none',
-                background: `linear-gradient(to right, ${KA_BLUE} ${value}%, #eee ${value}%)`,
+                display: 'flex',
+                alignItems: 'center',
+                marginBottom: '18px',
+                gap: '12px',
               }}
-            />
-            <CustomText
-              text={`${value}`}
-              color={COLORS.BLACK}
-              fontSize="14px"
-              fontFamily="Korean-Air-Sans-Regular"
-              style={{ width: '32px', textAlign: 'right' }}
-            />
-          </div>
-        ))}
+            >
+              <CustomText
+                text={label}
+                color={COLORS.BLACK}
+                fontSize="15px"
+                fontFamily="Korean-Air-Sans-Regular"
+                style={{ width: '70px', textAlign: 'left' }}
+              />
+              <input
+                type="range"
+                id={id}
+                min="0"
+                max="100"
+                value={value}
+                onChange={(e) => setValue(Number(e.target.value))}
+                style={{
+                  flex: 1,
+                  height: '6px',
+                  borderRadius: '3px',
+                  appearance: 'none',
+                  background: `linear-gradient(to right, ${KA_BLUE} ${value}%, #eee ${value}%)`,
+                  cursor: 'pointer',
+                }}
+              />
+              <CustomText
+                text={`${value}`}
+                color={COLORS.BLACK}
+                fontSize="14px"
+                fontFamily="Korean-Air-Sans-Regular"
+                style={{ width: '32px', textAlign: 'right' }}
+              />
+            </div>
+          ))}
+        </div>
 
         {/* 기타 사항 입력 */}
-        <div style={{ marginBottom: '24px' }}>
+        <div style={{ marginBottom: '32px' }}>
           <CustomText
             text="기타사항"
             color={COLORS.BLACK}
             fontSize="15px"
             fontFamily="Korean-Air-Sans-Regular"
-            style={{ marginBottom: '6px' }}
+            style={{ marginBottom: '8px' }}
           />
           <input
             type="text"
@@ -263,11 +266,12 @@ const Recommend = () => {
             onChange={(e) => setOther(e.target.value)}
             style={{
               fontSize: '15px',
-              padding: '10px',
+              padding: '12px',
               borderRadius: '10px',
               border: '1px solid #ddd',
-              width: '100%',
+              width: 'calc(100% - 24px)',
               backgroundColor: '#f9f9f9',
+              outline: 'none',
             }}
           />
         </div>
@@ -286,7 +290,7 @@ const Recommend = () => {
               borderRadius: '24px',
               border: `1px solid ${COLORS.BOX_BORDER}`,
               cursor: 'pointer',
-              transition: 'background 0.2s ease-in-out',
+              transition: 'all 0.2s ease',
             }}
           >
             전송

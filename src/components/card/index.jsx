@@ -38,13 +38,21 @@ const CustomCard = ({ id, imgUrl, title, description, isRank, rankNumber }) => {
   };
 
   return (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
+    <div
+      style={{
+        position: 'relative',
+        display: 'inline-block',
+        width: '13vw',
+        maxWidth: 320, // 최대 크기 제한 (필요 시 조절)
+        margin: '0 auto', // 중앙 정렬
+      }}
+    >
       {isRank && rankNumber && getMedalOrRank(rankNumber) && (
         <div
           style={{
             position: 'absolute',
-            top: -10,
-            left: -10,
+            top: 8,
+            left: 8,
             backgroundColor: 'white',
             borderRadius: '50%',
             width: 40,
@@ -64,13 +72,26 @@ const CustomCard = ({ id, imgUrl, title, description, isRank, rankNumber }) => {
 
       <Card
         hoverable
-        style={{ width: 240, position: 'relative' }}
+        style={{ width: '100%', position: 'relative' }}
         cover={
-          <img
-            alt="card"
-            src={imgUrl}
-            style={{ height: 200, objectFit: 'cover', width: '100%' }}
-          />
+          <div
+            style={{
+              width: '100%',
+              aspectRatio: '4 / 3', // 4:3 비율 유지 (Chrome, 최신 브라우저 지원)
+              overflow: 'hidden',
+            }}
+          >
+            <img
+              alt="card"
+              src={imgUrl}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
+          </div>
         }
         onClick={() => navigate(`/details/${id}`)}
       >

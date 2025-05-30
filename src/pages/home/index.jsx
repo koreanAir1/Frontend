@@ -97,12 +97,14 @@ const Container = styled.div`
   align-items: center;
   justify-content: flex-start;
   gap: 3vw;
+  position: relative;
 
   background-color: ${COLORS.WHITE};
   box-shadow: 0px 0px 25px 0px rgba(0, 0, 0, 0.04);
   border-radius: 16px;
   padding: 3vw 4vh 4vh 4vh;
   border: 1px solid ${COLORS.BOX_BORDER};
+  overflow: hidden;
 `;
 
 export default Home;

@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import CustomText from '../../components/text';
+import { COLORS } from '../../constants';
 
 // Recommend 컴포넌트를 정의하는 함수형 컴포넌트
 const Recommend = () => {
@@ -89,6 +91,7 @@ const Recommend = () => {
             borderRadius: '12px',
             fontWeight: 'bold',
           }}
+          readOnly
         />
         {/* 입력된 선호 정보 - 한 줄로 표시 */}
         <div
@@ -132,84 +135,92 @@ const Recommend = () => {
         left: 0,
         width: '100%',
         height: '100%',
-        background: 'rgba(0,0,0,0.5)',
+        background: 'rgba(0,0,0,0.4)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
-        fontWeight: 'bold',
+        fontFamily: 'Korean-Air-Sans-Regular',
       }}
     >
       <div
         style={{
           width: '90%',
-          maxWidth: '500px',
-          background: '#fff',
-          padding: '20px',
-          borderRadius: '12px',
+          maxWidth: '480px',
+          background: '#ffffff',
+          padding: '32px',
+          borderRadius: '16px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
         }}
       >
-        {/* 모달 제목 및 설명 */}
-        <h2
-          style={{ fontSize: '18px', marginBottom: '8px', textAlign: 'center' }}
-        >
-          선호음식 저장
-        </h2>
-        <p
-          style={{
-            fontSize: '14px',
-            marginBottom: '16px',
-            textAlign: 'center',
-          }}
-        >
-          선호도 조사 입력 시 AI를 활용한 메뉴 추천을 해드립니다.
-        </p>
+        {/* 제목 & 설명 */}
+        <div style={{ marginBottom: '24px' }}>
+          <CustomText
+            text="선호음식 저장"
+            color={COLORS.BLUE}
+            fontFamily="Korean-Air-Sans-Bold"
+            fontSize="1.6rem"
+          />
+          <CustomText
+            text="선호도 조사 입력 시 AI를 활용한 메뉴 추천을 해드립니다."
+            color={COLORS.BLACK}
+            fontFamily="Korean-Air-Sans-Regular"
+            fontSize="0.95rem"
+            style={{ marginTop: '8px' }}
+          />
+        </div>
 
-        {/* 선호 음식 선택 드롭다운 */}
-        <div style={{ marginBottom: '16px' }}>
-          <label
-            htmlFor="food-select"
-            style={{ marginRight: '12px', fontSize: '15px' }}
-          >
-            선호 음식
-          </label>
+        {/* 선호 음식 선택 */}
+        <div style={{ marginBottom: '20px' }}>
+          <CustomText
+            text="선호 음식"
+            color={COLORS.BLACK}
+            fontSize="15px"
+            fontFamily="Korean-Air-Sans-Regular"
+            style={{ marginBottom: '6px' }}
+          />
           <select
             id="food-select"
             value={selectedFood}
             onChange={(e) => setSelectedFood(e.target.value)}
             style={{
               fontSize: '15px',
-              padding: '8px',
-              borderRadius: '12px',
-              border: '1px solid #ccc',
-              fontWeight: 'bold',
+              padding: '10px',
+              borderRadius: '10px',
+              border: '1px solid #ddd',
+              width: '100%',
+              backgroundColor: '#f9f9f9',
             }}
           >
             <option value="밥">밥</option>
             <option value="면">면</option>
             <option value="육류">고기</option>
-            <option value="해산물">고기</option>
           </select>
         </div>
 
-        {/* 슬라이더 컴포넌트 반복 생성 */}
+        {/* 슬라이더 입력 */}
         {[
           { id: 'salty', label: '짠맛', value: salty, setValue: setSalty },
           { id: 'spicy', label: '매운맛', value: spicy, setValue: setSpicy },
-          { id: 'sweet', label: '달다', value: sweet, setValue: setSweet },
-          { id: 'bland', label: '싱겁다', value: bland, setValue: setBland },
+          { id: 'sweet', label: '단맛', value: sweet, setValue: setSweet },
+          { id: 'bland', label: '싱거움', value: bland, setValue: setBland },
         ].map(({ id, label, value, setValue }) => (
           <div
             key={id}
             style={{
               display: 'flex',
               alignItems: 'center',
-              marginBottom: '12px',
+              marginBottom: '16px',
+              gap: '10px',
             }}
           >
-            <label htmlFor={id} style={{ width: '80px', fontSize: '15px' }}>
-              {label}
-            </label>
+            <CustomText
+              text={label}
+              color={COLORS.BLACK}
+              fontSize="15px"
+              fontFamily="Korean-Air-Sans-Regular"
+              style={{ width: '70px' }}
+            />
             <input
               type="range"
               id={id}
@@ -222,24 +233,28 @@ const Recommend = () => {
                 height: '6px',
                 borderRadius: '3px',
                 appearance: 'none',
-                background: `linear-gradient(to right, ${KA_BLUE} ${value}%, #ccc ${value}%)`,
+                background: `linear-gradient(to right, ${KA_BLUE} ${value}%, #eee ${value}%)`,
               }}
             />
-            <span
-              style={{ width: '40px', textAlign: 'right', fontSize: '15px' }}
-            >
-              {value}
-            </span>
+            <CustomText
+              text={`${value}`}
+              color={COLORS.BLACK}
+              fontSize="14px"
+              fontFamily="Korean-Air-Sans-Regular"
+              style={{ width: '32px', textAlign: 'right' }}
+            />
           </div>
         ))}
 
-        {/* 기타 입력 텍스트 박스 */}
-        <div
-          style={{ display: 'flex', alignItems: 'center', marginTop: '16px' }}
-        >
-          <label htmlFor="other" style={{ width: '80px', fontSize: '15px' }}>
-            기타사항
-          </label>
+        {/* 기타 사항 입력 */}
+        <div style={{ marginBottom: '24px' }}>
+          <CustomText
+            text="기타사항"
+            color={COLORS.BLACK}
+            fontSize="15px"
+            fontFamily="Korean-Air-Sans-Regular"
+            style={{ marginBottom: '6px' }}
+          />
           <input
             type="text"
             id="other"
@@ -248,26 +263,31 @@ const Recommend = () => {
             onChange={(e) => setOther(e.target.value)}
             style={{
               fontSize: '15px',
-              padding: '8px',
-              borderRadius: '12px',
-              border: '1px solid #ccc',
-              flex: 1,
+              padding: '10px',
+              borderRadius: '10px',
+              border: '1px solid #ddd',
+              width: '100%',
+              backgroundColor: '#f9f9f9',
             }}
           />
         </div>
 
-        {/* 전송 버튼: 모달 닫기 */}
-        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+        {/* 전송 버튼 */}
+        <div style={{ textAlign: 'center' }}>
           <button
             type="button"
-            style={{
-              fontSize: '15px',
-              padding: '12px 24px',
-              borderRadius: '24px',
-              border: '1px solid #ccc',
-              cursor: 'pointer',
-            }}
             onClick={handleSend}
+            style={{
+              background: COLORS.WHITE,
+              color: COLORS.BLACK,
+              fontSize: '15px',
+              fontFamily: 'Korean-Air-Sans-Bold',
+              padding: '12px 32px',
+              borderRadius: '24px',
+              border: `1px solid ${COLORS.BOX_BORDER}`,
+              cursor: 'pointer',
+              transition: 'background 0.2s ease-in-out',
+            }}
           >
             전송
           </button>

@@ -11,3 +11,8 @@ export const likeCountAtomFamily = atomFamily({
   key: 'likeCountAtomFamily',
   default: 0, // 초기값은 컴포넌트에서 설정
 });
+
+export const feedbackDoneAtom = atom({
+  key: 'feedbackDoneAtom',
+  default: false,
+});

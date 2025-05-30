@@ -9,6 +9,7 @@ import CustomText from '../../components/text';
 import CustomModal from '../../components/modal';
 import { COLORS } from '../../constants';
 import ReactWordcloud from 'react-wordcloud';
+import { feedbackDoneAtom } from '../../stores/atom';
 
 const Details = () => {
   const { id } = useParams();
@@ -17,6 +18,7 @@ const Details = () => {
   const [liked, setLiked] = useRecoilState(likeAtomFamily(cardId));
   const [likeCount, setLikeCount] = useRecoilState(likeCountAtomFamily(cardId));
   const [showWordcloud, setShowWordcloud] = useState(true);
+  const [feedbackDone, setFeedbackDone] = useRecoilState(feedbackDoneAtom); // 추가
 
   // 워드클라우드 데이터
   const wordcloudData = [
@@ -66,7 +68,7 @@ const Details = () => {
   // 이미지 URL과 날짜 확인
   const imageUrl =
     'http://k.kakaocdn.net/dn/h5kvR/btsOi8a81Kh/ySgKbU4DHVp12d0Qb7Upj1/img_xl.jpg';
-  const dateText = '2025년 05월 31일';
+  const dateText = '2025년 05월 30일';
   // 현재 날짜와 일치하는지 확인
   const isToday = dateText === todayText;
   const shouldShowFeedbackButton = isToday;
@@ -122,6 +124,12 @@ const Details = () => {
 
   const showModal = () => {
     setOpen(true);
+  };
+
+  const handleFeedbackSubmit = () => {
+    setFeedbackDone(true);
+    setOpen(false);
+    // 여기서 서버에 피드백 전송도 가능
   };
 
   return (
@@ -245,14 +253,25 @@ const Details = () => {
 
         {/* 피드백 버튼 - 조건부 렌더링 */}
         {shouldShowFeedbackButton ? (
-          <FeedbackButton onClick={showModal}>
-            <CustomText
-              text={'피드백 남기기'}
-              fontFamily={'Korean-Air-Sans-Bold'}
-              fontSize={'1rem'}
-              color={COLORS.WHITE}
-            />
-          </FeedbackButton>
+          feedbackDone ? (
+            <DisabledFeedbackButton>
+              <CustomText
+                text={'이미 피드백을 완료했어요'}
+                fontFamily={'Korean-Air-Sans-Regular'}
+                fontSize={'1rem'}
+                color={COLORS.GRAY}
+              />
+            </DisabledFeedbackButton>
+          ) : (
+            <FeedbackButton onClick={showModal}>
+              <CustomText
+                text={'피드백 남기기'}
+                fontFamily={'Korean-Air-Sans-Bold'}
+                fontSize={'1rem'}
+                color={COLORS.WHITE}
+              />
+            </FeedbackButton>
+          )
         ) : (
           <DisabledFeedbackButton>
             <CustomText
@@ -276,7 +295,12 @@ const Details = () => {
         }
         open={open}
         setOpen={setOpen}
-        contents={'안녕'}
+        contents={
+          <>
+            {/* 피드백 입력 내용 등 */}
+            <button onClick={handleFeedbackSubmit}>제출</button>
+          </>
+        }
       />
     </>
   );

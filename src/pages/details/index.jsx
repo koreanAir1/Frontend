@@ -6,7 +6,6 @@ import { useParams } from 'react-router-dom';
 import { useRecoilState, useRecoilCallback } from 'recoil';
 import { likeAtomFamily, likeCountAtomFamily } from '../../stores/atom';
 import CustomText from '../../components/text';
-import CustomModal from '../../components/modal';
 import { COLORS } from '../../constants';
 import ReactWordcloud from 'react-wordcloud';
 import { feedbackDoneAtom } from '../../stores/atom';
@@ -14,7 +13,6 @@ import { feedbackDoneAtom } from '../../stores/atom';
 const Details = () => {
   const { id } = useParams();
   const cardId = parseInt(id, 10);
-
   const [liked, setLiked] = useRecoilState(likeAtomFamily(cardId));
   const [likeCount, setLikeCount] = useRecoilState(likeCountAtomFamily(cardId));
   const [showWordcloud, setShowWordcloud] = useState(true);
@@ -120,10 +118,7 @@ const Details = () => {
     [cardId],
   );
 
-import { useState } from 'react';
-
-// Details 컴포넌트: 피드백 팝업만 표시, 선택된 옵션은 콘솔에 출력
-const Details = () => {
+  // Details 컴포넌트: 피드백 팝업만 표시, 선택된 옵션은 콘솔에 출력
   const KA_BLUE = '#154D9E';
   const [open, setOpen] = useState(false);
   const [selections, setSelections] = useState([]);
@@ -140,6 +135,20 @@ const Details = () => {
     setFeedbackDone(true);
     setOpen(false);
   };
+
+  const handleCancel = () => {
+    setSelections([]);
+    setOpen(false);
+  };
+
+  const feedbackOptions = [
+    '짜다',
+    '맵다',
+    '달다',
+    '양이 적다',
+    '양이 많다',
+    '맛있다',
+  ];
 
   return (
     <>
@@ -272,7 +281,7 @@ const Details = () => {
               />
             </DisabledFeedbackButton>
           ) : (
-            <FeedbackButton onClick={showModal}>
+            <FeedbackButton onClick={setOpen}>
               <CustomText
                 text={'피드백 남기기'}
                 fontFamily={'Korean-Air-Sans-Bold'}
@@ -293,148 +302,99 @@ const Details = () => {
         )}
       </Container>
 
-      <CustomModal
-        title={
-          <CustomText
-            text={'피드백 하기'}
-            color={COLORS.BLUE}
-            fontFamily={'Korean Air Sans Bold'}
-            fontSize={'1.2rem'}
-          />
-        }
-        open={open}
-        setOpen={setOpen}
-        contents={
-          <>
-            {/* 피드백 입력 내용 등 */}
-            <button onClick={handleFeedbackSubmit}>제출</button>
-          </>
-        }
-      />
-    </>
-  const handleCancel = () => {
-    setSelections([]);
-    setOpen(false);
-  };
-
-  const feedbackOptions = [
-    '짜다',
-    '맵다',
-    '달다',
-    '양이 적다',
-    '양이 많다',
-    '맛있다',
-  ];
-
-  return (
-    <div style={{ padding: 20, fontFamily: 'Korean Air Sans', color: '#333' }}>
-      {/* 피드백 팝업 트리거 버튼 */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <button
-          onClick={() => setOpen(true)}
-          style={{
-            background: KA_BLUE,
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            padding: '10px 20px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-          }}
-        >
-          피드백 하기
-        </button>
-      </div>
-
-      {/* 피드백 모달 */}
-      {open && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+      <div
+        style={{ padding: 20, fontFamily: 'Korean Air Sans', color: '#333' }}
+      >
+        {/* 피드백 모달 */}
+        {open && (
           <div
             style={{
-              background: '#fff',
-              padding: 24,
-              borderRadius: 12,
-              width: 320,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: 'rgba(0,0,0,0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            <h3 style={{ margin: 0, marginBottom: 16, color: KA_BLUE }}>
-              피드백
-            </h3>
             <div
               style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 8,
-                marginBottom: 16,
+                background: '#fff',
+                padding: 24,
+                borderRadius: 12,
+                width: 320,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
               }}
             >
-              {feedbackOptions.map((opt) => (
+              <h3 style={{ margin: 0, marginBottom: 16, color: KA_BLUE }}>
+                피드백
+              </h3>
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 8,
+                  marginBottom: 16,
+                }}
+              >
+                {feedbackOptions.map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() => toggleOption(opt)}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: 8,
+                      border: selections.includes(opt)
+                        ? `1px solid ${KA_BLUE}`
+                        : `1px solid #ccc`,
+                      background: selections.includes(opt) ? KA_BLUE : '#fff',
+                      color: selections.includes(opt) ? '#fff' : '#333',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+              <div
+                style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}
+              >
                 <button
-                  key={opt}
-                  onClick={() => toggleOption(opt)}
+                  onClick={handleCancel}
                   style={{
-                    padding: '6px 12px',
+                    background: '#f0f0f0',
+                    color: '#666',
+                    border: 'none',
                     borderRadius: 8,
-                    border: selections.includes(opt)
-                      ? `1px solid ${KA_BLUE}`
-                      : `1px solid #ccc`,
-                    background: selections.includes(opt) ? KA_BLUE : '#fff',
-                    color: selections.includes(opt) ? '#fff' : '#333',
+                    padding: '8px 16px',
                     cursor: 'pointer',
                   }}
                 >
-                  {opt}
+                  취소
                 </button>
-              ))}
-            </div>
-            <div
-              style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}
-            >
-              <button
-                onClick={handleCancel}
-                style={{
-                  background: '#f0f0f0',
-                  color: '#666',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '8px 16px',
-                  cursor: 'pointer',
-                }}
-              >
-                취소
-              </button>
-              <button
-                onClick={handleOk}
-                style={{
-                  background: KA_BLUE,
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '8px 16px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                }}
-              >
-                Ok
-              </button>
+                <button
+                  onClick={handleOk}
+                  style={{
+                    background: KA_BLUE,
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '8px 16px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  Ok
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 };
 

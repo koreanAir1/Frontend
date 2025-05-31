@@ -65,21 +65,20 @@ const Details = () => {
 
   // 로딩 및 에러 상태 처리
   const { data: menuData, isLoading, error } = menuDetailQuery;
-  // const { data: feedbackData, isLoading1, error1 } = feedbackQuery;
-
-  // 워드클라우드 데이터 - API 데이터에서 동적으로 생성하거나 기본값 사용
-  const wordcloudData = menuData?.wordcloud || [
-    { text: '불고기', value: 80 },
-    { text: '덮밥', value: 70 },
-    { text: '맛있는', value: 60 },
-    { text: '한식', value: 50 },
-    { text: '점심', value: 45 },
-    { text: '잡채', value: 40 },
-    { text: '오이소박이', value: 35 },
-    { text: '메밀전병', value: 30 },
-    { text: '영양', value: 25 },
-    { text: '건강', value: 20 },
-  ];
+  const { data: feedbackData, error1 } = feedbackQuery;
+  const feedback = feedbackData?.data?.data;
+  const wordcloudData = feedback
+    ? [
+        { text: '짠맛', value: feedback.feedbackSalty },
+        { text: '매운맛', value: feedback.feedbackSpicy },
+        { text: '단맛', value: feedback.feedbackSweet },
+        { text: '많음', value: feedback.feedbackMuch },
+        { text: '적음', value: feedback.feedbackLess },
+        { text: '좋음', value: feedback.feedbackGood },
+        { text: '그저그럼', value: feedback.feedbackSoso },
+        { text: '나쁨', value: feedback.feedbackBad },
+      ].filter((item) => item.value > 0)
+    : [];
 
   // 워드클라우드 옵션
   const wordcloudOptions = {
@@ -287,11 +286,34 @@ const Details = () => {
       {showWordcloud && shouldShowFeedbackButton && (
         <WordcloudOverlay>
           <WordcloudContainer>
-            <ReactWordcloud words={wordcloudData} options={wordcloudOptions} />
+            {wordcloudData.length === 0 ? (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  width: '80vw',
+                  height: '60vh',
+                  maxWidth: '800px',
+                  maxHeight: '600px',
+                }}
+              >
+                <CustomText
+                  text={'피드백이 없습니다.'}
+                  fontFamily={'Korean-Air-Sans-Bold'}
+                  fontSize={'2rem'}
+                  color={COLORS.BLUE}
+                ></CustomText>
+              </div>
+            ) : (
+              <ReactWordcloud
+                words={wordcloudData}
+                options={wordcloudOptions}
+              />
+            )}
           </WordcloudContainer>
         </WordcloudOverlay>
       )}
-
       <Container style={{ opacity: showWordcloud ? 0.3 : 1 }}>
         {/* 날짜 헤더 */}
         <DateHeader>

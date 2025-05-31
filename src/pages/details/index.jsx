@@ -113,7 +113,13 @@ const Details = () => {
     transitionDuration: 1000,
   };
   const today = new Date();
-  const todayISO = today.toISOString().split('T')[0]; // "2025-05-31" 형식
+  const kst = new Date(
+    today.getTime() + today.getTimezoneOffset() * 60000 + 9 * 3600000,
+  );
+  const year = kst.getFullYear();
+  const month = String(kst.getMonth() + 1).padStart(2, '0');
+  const day = String(kst.getDate()).padStart(2, '0');
+  const dateString = `${year}-${month}-${day}`;
 
   // API에서 받은 데이터 사용 또는 기본값
   const imageUrl =
@@ -148,7 +154,7 @@ const Details = () => {
   };
 
   // 현재 날짜와 일치하는지 확인
-  const isToday = dateText === todayISO;
+  const isToday = dateText === dateString;
   const shouldShowFeedbackButton = isToday;
 
   // 3초 후 워드클라우드 숨기기

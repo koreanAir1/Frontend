@@ -1,37 +1,68 @@
 import { useState } from 'react';
 import CustomText from '../../components/text';
 import { COLORS } from '../../constants';
-
+import { useMutation } from '@tanstack/react-query';
+import { recommendApi } from '../../api/recommend';
 // Recommend 컴포넌트를 정의하는 함수형 컴포넌트
 const Recommend = () => {
+  // 추천 전송 API 호출 뮤테이션
+  const recommendMutation = useMutation({
+    mutationFn: async (data) => {
+      try {
+        const response = await recommendApi.postRecommendApi(data);
+        return response;
+      } catch (error) {
+        throw new error('error');
+      }
+    },
+    onSuccess: (data) => {
+      setResult(data?.data?.data?.description);
+    },
+  });
   // 모달 오픈 상태
   const [isOpen, setIsOpen] = useState(true);
-  // 페이지 작성 내용
-  const [pageContent, setPageContent] = useState('');
 
   // 상태 훅: 선택된 음식
-  const [selectedFood, setSelectedFood] = useState('밥');
+  const [foodType, setFoodType] = useState('밥');
   // 상태 훅: 맛 선호도 (0~100)
   const [salty, setSalty] = useState(50);
   const [spicy, setSpicy] = useState(50);
   const [sweet, setSweet] = useState(50);
   const [bland, setBland] = useState(50);
   // 기타 입력값
-  const [other, setOther] = useState('');
+  const [comment, setComment] = useState('');
 
-  // 브랜드 블루: Korean Air Yale Blue
-  const KA_BLUE = '#154D9E';
+  const [result, setResult] = useState('');
+  const today = new Date();
+  const kst = new Date(
+    today.getTime() + today.getTimezoneOffset() * 60000 + 9 * 3600000,
+  );
+  const year = kst.getFullYear();
+  const month = String(kst.getMonth() + 1).padStart(2, '0');
+  const day = String(kst.getDate()).padStart(2, '0');
+  const dateString = `${year}-${month}-${day}`;
 
   // 전송 버튼 클릭 핸들러: 모달 닫기 전 콘솔에 선호도 로그
   const handleSend = () => {
-    console.log('선호도 결과:', {
-      selectedFood,
+    // console.log('선호도 결과:', {
+    //   foodType,
+    //   salty,
+    //   spicy,
+    //   sweet,
+    //   bland,
+    //   comment,
+    //   dateString,
+    // });
+    const data = {
+      foodType,
       salty,
       spicy,
       sweet,
       bland,
-      other,
-    });
+      comment,
+      menuDate: dateString,
+    };
+    recommendMutation.mutate(data);
     setIsOpen(false);
   };
 
@@ -79,7 +110,10 @@ const Recommend = () => {
               />
               <button
                 type="button"
-                onClick={() => setIsOpen(true)}
+                onClick={() => {
+                  setResult('');
+                  setIsOpen(true);
+                }}
                 style={{
                   background: COLORS.BLUE,
                   color: '#fff',
@@ -99,9 +133,8 @@ const Recommend = () => {
 
             {/* 추천 음식 텍스트 영역 */}
             <textarea
-              value={pageContent}
-              onChange={(e) => setPageContent(e.target.value)}
-              placeholder="여기에 추천음식 AI 연동예정"
+              value={result === '' ? '입력 중...' : result}
+              text={result}
               style={{
                 width: 'calc(100% - 24px)',
                 height: '200px',
@@ -154,7 +187,7 @@ const Recommend = () => {
               style={{
                 padding: '20px',
                 background: '#f2f7ff',
-                border: `1px solid ${KA_BLUE}`,
+                border: `1px solid ${COLORS.BLUE}`,
                 borderRadius: '12px',
               }}
             >
@@ -167,7 +200,7 @@ const Recommend = () => {
                 }}
               >
                 {[
-                  { label: '선호 음식', value: selectedFood },
+                  { label: '선호 음식', value: foodType },
                   { label: '짠맛', value: salty },
                   { label: '매운맛', value: spicy },
                   { label: '달다', value: sweet },
@@ -184,7 +217,7 @@ const Recommend = () => {
                     <CustomText
                       text={item.label}
                       fontSize="13px"
-                      color={KA_BLUE}
+                      color={COLORS.BLUE}
                       fontFamily="Korean-Air-Sans-Regular"
                       style={{ marginBottom: '4px' }}
                     />
@@ -258,8 +291,8 @@ const Recommend = () => {
           />
           <select
             id="food-select"
-            value={selectedFood}
-            onChange={(e) => setSelectedFood(e.target.value)}
+            value={foodType}
+            onChange={(e) => setFoodType(e.target.value)}
             style={{
               fontSize: '15px',
               padding: '12px',
@@ -312,7 +345,7 @@ const Recommend = () => {
                   height: '6px',
                   borderRadius: '3px',
                   appearance: 'none',
-                  background: `linear-gradient(to right, ${KA_BLUE} ${value}%, #eee ${value}%)`,
+                  background: `linear-gradient(to right, ${COLORS.BLUE} ${value}%, #eee ${value}%)`,
                   cursor: 'pointer',
                 }}
               />
@@ -340,8 +373,8 @@ const Recommend = () => {
             type="text"
             id="other"
             placeholder="추가하고 싶은 선호를 입력하세요"
-            value={other}
-            onChange={(e) => setOther(e.target.value)}
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
             style={{
               fontSize: '15px',
               padding: '12px',

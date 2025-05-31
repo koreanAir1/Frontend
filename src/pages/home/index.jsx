@@ -14,10 +14,18 @@ import { useEffect } from 'react';
 
 const Home = () => {
   const navigate = useNavigate();
+  const weekday = 'MON';
+  // const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI'];
+  // const today = new Date();
+  // const weekday = days[today.getDay()];
   const todayMenuQuery = useQuery({
-    queryKey: ['todayMenu'],
-    queryFn: () => menuApi.getTodayMenuApi(),
+    queryKey: ['todayMenu', weekday],
+    queryFn: ({ queryKey }) => {
+      const [, weekday] = queryKey;
+      return menuApi.getTodayMenuApi(weekday);
+    },
   });
+
   const todayMenuList = todayMenuQuery.data?.data?.data;
   const setAllIds = useSetRecoilState(allIdsAtom);
   const initializeLikes = useRecoilCallback(

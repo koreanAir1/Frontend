@@ -12,6 +12,7 @@ import { feedbackDoneAtom } from '../../stores/atom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { menuApi } from '../../api/menu';
 import { feedbackApi } from '../../api/feedback';
+import { commonMenuApi } from '../../api/common_menu';
 
 const Details = () => {
   const { id } = useParams();
@@ -65,7 +66,15 @@ const Details = () => {
 
   // 로딩 및 에러 상태 처리
   const { data: menuData, isLoading, error } = menuDetailQuery;
-  const { data: feedbackData, error1 } = feedbackQuery;
+  const { data: feedbackData } = feedbackQuery;
+  const commonMenuQuery = useQuery({
+    queryKey: ['common', menuData?.data?.weekday],
+    queryFn: () =>
+      commonMenuApi.getCommonMenuDetailApi(menuData?.data?.data?.weekday),
+    enabled: !!menuData?.data?.data?.weekday,
+  });
+  const { data: commonData } = commonMenuQuery;
+  const commonMenu = commonData?.data?.data || [];
   const feedback = feedbackData?.data?.data;
   const wordcloudData = feedback
     ? [
@@ -112,11 +121,8 @@ const Details = () => {
     'http://k.kakaocdn.net/dn/h5kvR/btsOi8a81Kh/ySgKbU4DHVp12d0Qb7Upj1/img_xl.jpg';
   const dateText = menuData?.data?.data?.menuDate;
   const menuTitle = menuData?.data?.data?.menuName;
-  const menuDescription = menuData?.description || [
-    '잡채',
-    '오이소박이',
-    '메밀 전병',
-  ];
+  const menuDescription =
+    commonMenu.length > 0 ? commonMenu.map((item) => item.commonName) : [];
 
   const parseNutrition = (nutrilString) => {
     if (typeof nutrilString !== 'string') {
@@ -197,10 +203,7 @@ const Details = () => {
   };
 
   const handleOk = () => {
-    console.log('선택된 피드백:', selections);
     const feedbackType = selections.map((key) => feedbackOptions[key]); // 문자열 배열 생성
-
-    console.log('전송할 피드백:', feedbackType);
 
     feedbackMutation.mutate({
       feedbackType,

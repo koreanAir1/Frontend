@@ -1,8 +1,8 @@
 import instance from '..';
 
 export const menuApi = {
-  getTodayMenuApi: () => {
-    return instance.get('/menu/today');
+  getTodayMenuApi: (weekday) => {
+    return instance.get(`/menu/today?weekday=${weekday}`);
   },
   getWeeklyMenuApi: () => {
     return instance.get('/menu/weekly');

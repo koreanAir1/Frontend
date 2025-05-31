@@ -117,8 +117,7 @@ const Details = () => {
 
   // API에서 받은 데이터 사용 또는 기본값
   const imageUrl =
-    menuData?.data?.data?.menuImgUrl ||
-    'http://k.kakaocdn.net/dn/h5kvR/btsOi8a81Kh/ySgKbU4DHVp12d0Qb7Upj1/img_xl.jpg';
+    menuData?.data?.data?.menuImgUrl || '/assets/images/defaultImage.png';
   const dateText = menuData?.data?.data?.menuDate;
   const menuTitle = menuData?.data?.data?.menuName;
   const menuDescription =

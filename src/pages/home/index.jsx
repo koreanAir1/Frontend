@@ -28,6 +28,7 @@ const Home = () => {
   const weeklyMenuQuery = useQuery({
     queryKey: ['weeklyMenu'],
     queryFn: () => menuApi.getWeeklyMenuApi(),
+    staleTime: Infinity,
   });
 
   const todayMenuList = todayMenuQuery.data?.data?.data;

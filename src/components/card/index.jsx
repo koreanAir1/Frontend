@@ -5,6 +5,7 @@ import { HeartFilled, HeartOutlined } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
 import { menuApi } from '../../api/menu';
 import { likeInfoAtomFamily, allIdsAtom } from '../../stores/atom';
+import { useState } from 'react';
 
 const { Meta } = Card;
 
@@ -42,12 +43,9 @@ const CustomCard = ({
       }
     },
   });
-
-  const isEmptyImage = !imgUrl || imgUrl.trim() === '';
-  const displayImageUrl = isEmptyImage
-    ? 'https://www.naver.com/favicon.ico'
-    : imgUrl;
-
+  const displayImageUrl =
+    !imgUrl || imgUrl.length === 0 ? '/images/defaultImage.png' : imgUrl;
+  const [imageSrc, setImageSrc] = useState(displayImageUrl);
   // 좋아요 토글 함수 (Recoil 상태 변경 및 API 호출)
   const toggleLike = useRecoilCallback(
     ({ set, snapshot }) =>
@@ -154,12 +152,15 @@ const CustomCard = ({
           >
             <img
               alt="card"
-              src={displayImageUrl}
+              src={imageSrc}
               style={{
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
                 display: 'block',
+              }}
+              onError={() => {
+                setImageSrc('/assets/images/defaultImage.png'); // state 업데이트
               }}
             />
           </div>

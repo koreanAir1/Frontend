@@ -18,7 +18,7 @@ const Details = () => {
   const [liked, setLiked] = useRecoilState(likeInfoAtomFamily(cardId));
   const [showWordcloud, setShowWordcloud] = useState(true);
   const [feedbackDone, setFeedbackDone] = useRecoilState(feedbackDoneAtom);
-
+  console.log('cardId:', cardId, 'liked:', liked);
   const menuDetailQuery = useQuery({
     queryKey: ['menuDetail', id],
     queryFn: () => menuApi.getMenuDetailApi(id),

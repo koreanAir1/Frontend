@@ -20,7 +20,7 @@ const CustomCard = ({
   const navigate = useNavigate();
   const [likeInfo, setLikeInfo] = useRecoilState(likeInfoAtomFamily(id));
   // likeInfo 구조: { liked: boolean, count: number, id: number }
-
+  console.log('cardId:', id, 'liked:', likeInfo);
   // 좋아요 API 호출 뮤테이션
   const likeMutation = useMutation({
     mutationFn: async (data) => {

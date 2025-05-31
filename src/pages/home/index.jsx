@@ -21,15 +21,21 @@ const Home = () => {
   const todayMenuList = todayMenuQuery.data?.data?.data;
   const setAllIds = useSetRecoilState(allIdsAtom);
   const initializeLikes = useRecoilCallback(
-    ({ set }) =>
-      (menus) => {
-        menus.forEach((menu) => {
+    ({ set, snapshot }) =>
+      async (menus) => {
+        for (const menu of menus) {
+          const current = await snapshot.getLoadable(
+            likeInfoAtomFamily(menu.idMenu),
+          ).contents;
+
+          const prevLiked = current?.liked ?? false; // 이전 liked 값이 있으면 유지
+
           set(likeInfoAtomFamily(menu.idMenu), {
             id: menu.idMenu,
-            liked: false,
-            count: menu.menuLiked,
+            liked: prevLiked,
+            count: menu.menuLiked, // 서버에서 받은 최신 count로 항상 갱신
           });
-        });
+        }
       },
     [],
   );

@@ -1,9 +1,11 @@
 import { useRecoilCallback, useRecoilState } from 'recoil';
 import { useNavigate } from 'react-router-dom';
-import { likeAtomFamily, likeCountAtomFamily } from '../../stores/atom';
 import { Card } from 'antd';
 import { HeartFilled, HeartOutlined } from '@ant-design/icons';
-import { useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { menuApi } from '../../api/menu';
+import { likeInfoAtomFamily, allIdsAtom } from '../../stores/atom';
+import { useState } from 'react';
 
 const { Meta } = Card;
 
@@ -17,58 +19,75 @@ const CustomCard = ({
   likeNumber,
 }) => {
   const navigate = useNavigate();
-  const [isLiked, setIsLiked] = useRecoilState(likeAtomFamily(id));
+  const [likeInfo, setLikeInfo] = useRecoilState(likeInfoAtomFamily(id));
+  // likeInfo 구조: { liked: boolean, count: number, id: number }
+  console.log('cardId:', id, 'liked:', likeInfo);
+  // 좋아요 API 호출 뮤테이션
+  const likeMutation = useMutation({
+    mutationFn: async (data) => {
+      try {
+        await menuApi.postLikeApi(data);
+      } catch (error) {
+        throw new error('error');
+      }
+    },
+  });
 
-  const isEmptyImage = !imgUrl || imgUrl.trim() === '';
-  const displayImageUrl = isEmptyImage
-    ? 'https://www.naver.com/favicon.ico'
-    : imgUrl;
-
-  // 단순화된 atom 키 사용 (id만 사용)
-  const [likeCount, setLikeCount] = useRecoilState(likeCountAtomFamily(id));
-
-  // 초기값 설정 - 컴포넌트 마운트 시 한 번만
-  useEffect(() => {
-    setLikeCount((prevCount) => {
-      // 이미 설정된 값이 있으면 유지, 없으면 초기값 설정
-      return prevCount === 0 ? likeNumber : prevCount;
-    });
-  }, [likeNumber, setLikeCount]);
-
+  // 좋아요 취소 API 호출 뮤테이션
+  const dislikeMutation = useMutation({
+    mutationFn: async (data) => {
+      try {
+        await menuApi.postDislikeApi(data);
+      } catch (error) {
+        throw new error('error');
+      }
+    },
+  });
+  const displayImageUrl =
+    !imgUrl || imgUrl.length === 0 ? '/images/defaultImage.png' : imgUrl;
+  const [imageSrc, setImageSrc] = useState(displayImageUrl);
+  // 좋아요 토글 함수 (Recoil 상태 변경 및 API 호출)
   const toggleLike = useRecoilCallback(
     ({ set, snapshot }) =>
-      async (e) => {
+      async (e, currentId) => {
         e.stopPropagation();
 
-        // 현재 카드만 토글하고, 다른 카드들의 좋아요는 해제하면서 숫자도 -1
-        for (let i = 0; i <= 5; i++) {
-          const isCurrent = i === id;
+        const allIds = await snapshot.getPromise(allIdsAtom);
 
-          if (isCurrent) {
-            // 현재 카드의 좋아요 토글
-            const prevLiked = await snapshot.getPromise(likeAtomFamily(i));
-            const prevCount = await snapshot.getPromise(likeCountAtomFamily(i));
+        for (const menuId of allIds) {
+          const info = await snapshot.getPromise(likeInfoAtomFamily(menuId));
 
-            const newLiked = !prevLiked;
-            set(likeAtomFamily(i), newLiked);
-            set(
-              likeCountAtomFamily(i),
-              newLiked ? prevCount + 1 : prevCount - 1,
-            );
+          if (menuId === currentId) {
+            const newLiked = !info.liked;
+            const newCount = newLiked
+              ? info.count + 1
+              : Math.max(0, info.count - 1);
+
+            set(likeInfoAtomFamily(menuId), {
+              ...info,
+              liked: newLiked,
+              count: newCount,
+            });
+
+            // API 호출
+            if (newLiked) {
+              likeMutation.mutate(currentId);
+            } else {
+              dislikeMutation.mutate(currentId);
+            }
           } else {
-            // 다른 카드들의 좋아요 해제
-            const prevLiked = await snapshot.getPromise(likeAtomFamily(i));
-            if (prevLiked) {
-              const prevCount = await snapshot.getPromise(
-                likeCountAtomFamily(i),
-              );
-              set(likeAtomFamily(i), false);
-              set(likeCountAtomFamily(i), Math.max(0, prevCount - 1));
+            // 다른 카드 좋아요 해제 및 카운트 조정
+            if (info.liked) {
+              set(likeInfoAtomFamily(menuId), {
+                ...info,
+                liked: false,
+                count: Math.max(0, info.count - 1),
+              });
             }
           }
         }
       },
-    [id],
+    [likeMutation, dislikeMutation],
   );
 
   const getMedalOrRank = (rank) => {
@@ -133,12 +152,16 @@ const CustomCard = ({
           >
             <img
               alt="card"
-              src={displayImageUrl}
+              src={imageSrc}
+              loading="lazy"
               style={{
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
                 display: 'block',
+              }}
+              onError={() => {
+                setImageSrc('/assets/images/defaultImage.png'); // state 업데이트
               }}
             />
           </div>
@@ -159,14 +182,14 @@ const CustomCard = ({
             }}
           >
             <div
-              onClick={toggleLike}
+              onClick={(e) => toggleLike(e, id)}
               style={{
                 fontSize: 20,
-                color: isLiked ? 'red' : 'gray',
+                color: likeInfo.liked ? 'red' : 'gray',
                 cursor: 'pointer',
               }}
             >
-              {isLiked ? <HeartFilled /> : <HeartOutlined />}
+              {likeInfo.liked ? <HeartFilled /> : <HeartOutlined />}
             </div>
             <div
               style={{
@@ -175,7 +198,7 @@ const CustomCard = ({
                 fontWeight: 'bold',
               }}
             >
-              {likeCount}
+              {likeInfo.count}
             </div>
           </div>
         )}

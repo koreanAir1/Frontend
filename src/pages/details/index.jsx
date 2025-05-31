@@ -1,36 +1,93 @@
 import { useState, useEffect } from 'react';
-import { Image } from 'antd';
-import { HeartFilled, HeartOutlined } from '@ant-design/icons';
+import { Image, Spin } from 'antd';
+import { HeartFilled, HeartOutlined, LoadingOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 import { useParams } from 'react-router-dom';
 import { useRecoilState, useRecoilCallback } from 'recoil';
-import { likeAtomFamily, likeCountAtomFamily } from '../../stores/atom';
+import { likeInfoAtomFamily } from '../../stores/atom';
 import CustomText from '../../components/text';
 import { COLORS } from '../../constants';
 import ReactWordcloud from 'react-wordcloud';
 import { feedbackDoneAtom } from '../../stores/atom';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { menuApi } from '../../api/menu';
+import { feedbackApi } from '../../api/feedback';
+import { commonMenuApi } from '../../api/common_menu';
 
 const Details = () => {
   const { id } = useParams();
   const cardId = parseInt(id, 10);
-  const [liked, setLiked] = useRecoilState(likeAtomFamily(cardId));
-  const [likeCount, setLikeCount] = useRecoilState(likeCountAtomFamily(cardId));
+  const [liked, setLiked] = useRecoilState(likeInfoAtomFamily(cardId));
   const [showWordcloud, setShowWordcloud] = useState(true);
-  const [feedbackDone, setFeedbackDone] = useRecoilState(feedbackDoneAtom); // 추가
+  const [feedbackDone, setFeedbackDone] = useRecoilState(feedbackDoneAtom);
+  const menuDetailQuery = useQuery({
+    queryKey: ['menuDetail', id],
+    queryFn: () => menuApi.getMenuDetailApi(id),
+  });
 
-  // 워드클라우드 데이터
-  const wordcloudData = [
-    { text: '불고기', value: 80 },
-    { text: '덮밥', value: 70 },
-    { text: '맛있는', value: 60 },
-    { text: '한식', value: 50 },
-    { text: '점심', value: 45 },
-    { text: '잡채', value: 40 },
-    { text: '오이소박이', value: 35 },
-    { text: '메밀전병', value: 30 },
-    { text: '영양', value: 25 },
-    { text: '건강', value: 20 },
-  ];
+  // 좋아요 API 호출 뮤테이션
+  const likeMutation = useMutation({
+    mutationFn: async (data) => {
+      try {
+        await menuApi.postLikeApi(data);
+      } catch (error) {
+        throw new error('error');
+      }
+    },
+  });
+
+  // 좋아요 취소 API 호출 뮤테이션
+  const dislikeMutation = useMutation({
+    mutationFn: async (data) => {
+      try {
+        await menuApi.postDislikeApi(data);
+      } catch (error) {
+        throw new error('error');
+      }
+    },
+  });
+
+  // 피드백 전송
+  const feedbackMutation = useMutation({
+    mutationFn: async (data) => {
+      try {
+        await feedbackApi.postFeedbackApi(data);
+      } catch (error) {
+        throw new error('error');
+      }
+    },
+  });
+
+  // 피드백 조회
+  const feedbackQuery = useQuery({
+    queryKey: ['feedback', id],
+    queryFn: () => feedbackApi.getFeedbackApi(id),
+  });
+
+  // 로딩 및 에러 상태 처리
+  const { data: menuData, isLoading, error } = menuDetailQuery;
+  const { data: feedbackData } = feedbackQuery;
+  const commonMenuQuery = useQuery({
+    queryKey: ['common', menuData?.data?.weekday],
+    queryFn: () =>
+      commonMenuApi.getCommonMenuDetailApi(menuData?.data?.data?.weekday),
+    enabled: !!menuData?.data?.data?.weekday,
+  });
+  const { data: commonData } = commonMenuQuery;
+  const commonMenu = commonData?.data?.data || [];
+  const feedback = feedbackData?.data?.data;
+  const wordcloudData = feedback
+    ? [
+        { text: '짠맛', value: feedback.feedbackSalty },
+        { text: '매운맛', value: feedback.feedbackSpicy },
+        { text: '단맛', value: feedback.feedbackSweet },
+        { text: '많음', value: feedback.feedbackMuch },
+        { text: '적음', value: feedback.feedbackLess },
+        { text: '좋음', value: feedback.feedbackGood },
+        { text: '그저그럼', value: feedback.feedbackSoso },
+        { text: '나쁨', value: feedback.feedbackBad },
+      ].filter((item) => item.value > 0)
+    : [];
 
   // 워드클라우드 옵션
   const wordcloudOptions = {
@@ -55,26 +112,54 @@ const Details = () => {
     spiral: 'archimedean',
     transitionDuration: 1000,
   };
-
-  // 오늘 날짜 생성 (YYYY년 MM월 DD일 형식)
   const today = new Date();
-  const todayText = `${today.getFullYear()}년 ${String(
-    today.getMonth() + 1,
-  ).padStart(2, '0')}월 ${String(today.getDate()).padStart(2, '0')}일`;
+  const kst = new Date(
+    today.getTime() + today.getTimezoneOffset() * 60000 + 9 * 3600000,
+  );
+  const year = kst.getFullYear();
+  const month = String(kst.getMonth() + 1).padStart(2, '0');
+  const day = String(kst.getDate()).padStart(2, '0');
+  const dateString = `${year}-${month}-${day}`;
 
-  const now = new Date();
-  // 이미지 URL과 날짜 확인
+  // API에서 받은 데이터 사용 또는 기본값
   const imageUrl =
-    'http://k.kakaocdn.net/dn/h5kvR/btsOi8a81Kh/ySgKbU4DHVp12d0Qb7Upj1/img_xl.jpg';
-  const dateText = '2025년 05월 30일';
+    menuData?.data?.data?.menuImgUrl || '/assets/images/defaultImage.png';
+  const dateText = menuData?.data?.data?.menuDate;
+  const menuTitle = menuData?.data?.data?.menuName;
+  const menuDescription =
+    commonMenu.length > 0 ? commonMenu.map((item) => item.commonName) : [];
+
+  const parseNutrition = (nutrilString) => {
+    if (typeof nutrilString !== 'string') {
+      return {
+        carbs: '0g',
+        protein: '0g',
+        fat: '0g',
+      };
+    }
+
+    const [carbs, protein, fat] = nutrilString.split(':');
+    return {
+      carbs: `${carbs || '0'}g`,
+      protein: `${protein || '0'}g`,
+      fat: `${fat || '0'}g`,
+    };
+  };
+
+  const nutritionData = parseNutrition(menuData?.data?.data?.menuNutri);
+  const menuInfo = {
+    line: `${menuData?.data?.data?.menuLine} 라인`,
+    calories: `${menuData?.data?.data?.menuKcal} kcal`,
+    nutrition: nutritionData,
+  };
+
   // 현재 날짜와 일치하는지 확인
-  const isToday = dateText === todayText;
+  const isToday = dateText === dateString;
   const shouldShowFeedbackButton = isToday;
 
   // 3초 후 워드클라우드 숨기기
   useEffect(() => {
     if (!shouldShowFeedbackButton) {
-      // 오늘이 아니면 즉시 워드클라우드 숨기기
       setShowWordcloud(false);
       return;
     }
@@ -83,42 +168,36 @@ const Details = () => {
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [shouldShowFeedbackButton]);
 
   const toggleLike = useRecoilCallback(
     ({ set, snapshot }) =>
       async (e) => {
         e.stopPropagation();
 
-        for (let i = 0; i <= 5; i++) {
-          const isCurrent = i === cardId;
+        const prevInfo = await snapshot.getPromise(likeInfoAtomFamily(cardId));
+        const newLiked = !prevInfo.liked;
+        const newCount = newLiked
+          ? prevInfo.count + 1
+          : Math.max(0, prevInfo.count - 1);
 
-          if (isCurrent) {
-            const prevLiked = await snapshot.getPromise(likeAtomFamily(i));
-            const prevCount = await snapshot.getPromise(likeCountAtomFamily(i));
+        set(likeInfoAtomFamily(cardId), {
+          ...prevInfo,
+          liked: newLiked,
+          count: newCount,
+        });
 
-            const newLiked = !prevLiked;
-            set(likeAtomFamily(i), newLiked);
-            set(
-              likeCountAtomFamily(i),
-              newLiked ? prevCount + 1 : prevCount - 1,
-            );
-          } else {
-            const prevLiked = await snapshot.getPromise(likeAtomFamily(i));
-            if (prevLiked) {
-              const prevCount = await snapshot.getPromise(
-                likeCountAtomFamily(i),
-              );
-              set(likeAtomFamily(i), false);
-              set(likeCountAtomFamily(i), Math.max(0, prevCount - 1));
-            }
-          }
+        // 좋아요 or 좋아요 취소 API 호출
+        if (newLiked) {
+          likeMutation.mutate(cardId);
+        } else {
+          dislikeMutation.mutate(cardId);
         }
       },
-    [cardId],
+    [cardId, likeMutation, dislikeMutation],
   );
 
-  // Details 컴포넌트: 피드백 팝업만 표시, 선택된 옵션은 콘솔에 출력
+  // 피드백 관련 상태
   const [open, setOpen] = useState(false);
   const [selections, setSelections] = useState([]);
 
@@ -129,7 +208,13 @@ const Details = () => {
   };
 
   const handleOk = () => {
-    console.log('선택된 피드백:', selections);
+    const feedbackType = selections.map((key) => feedbackOptions[key]); // 문자열 배열 생성
+
+    feedbackMutation.mutate({
+      feedbackType,
+      menuId: Number(id),
+    });
+
     setSelections([]);
     setFeedbackDone(true);
     setOpen(false);
@@ -140,14 +225,68 @@ const Details = () => {
     setOpen(false);
   };
 
-  const feedbackOptions = [
-    '짜다',
-    '맵다',
-    '달다',
-    '양이 적다',
-    '양이 많다',
-    '맛있다',
-  ];
+  const feedbackOptions = {
+    짜다: 'salty',
+    맵다: 'spicy',
+    달다: 'sweet',
+    '양이 적다': 'less',
+    '양이 많다': 'much',
+    맛있다: 'good',
+    보통: 'soso',
+    맛없다: 'bad',
+  };
+
+  // 로딩 상태 처리
+  if (isLoading) {
+    return (
+      <LoadingContainer>
+        <LoadingContent>
+          <Spin
+            indicator={
+              <LoadingOutlined
+                style={{
+                  fontSize: 48,
+                  color: COLORS.BLUE,
+                }}
+                spin
+              />
+            }
+            size="large"
+          />
+          <LoadingText>
+            <CustomText
+              text={'메뉴 정보를 불러오는 중...'}
+              fontFamily={'Korean-Air-Sans-Regular'}
+              fontSize={'1.2rem'}
+              color={COLORS.GRAY}
+            />
+          </LoadingText>
+        </LoadingContent>
+      </LoadingContainer>
+    );
+  }
+
+  // 에러 상태 처리
+  if (error) {
+    return (
+      <ErrorContainer>
+        <ErrorContent>
+          <CustomText
+            text={'메뉴 정보를 불러올 수 없습니다'}
+            fontFamily={'Korean-Air-Sans-Bold'}
+            fontSize={'1.5rem'}
+            color={COLORS.GRAY}
+          />
+          <CustomText
+            text={'잠시 후 다시 시도해주세요'}
+            fontFamily={'Korean-Air-Sans-Regular'}
+            fontSize={'1rem'}
+            color={COLORS.GRAY}
+          />
+        </ErrorContent>
+      </ErrorContainer>
+    );
+  }
 
   return (
     <>
@@ -155,11 +294,34 @@ const Details = () => {
       {showWordcloud && shouldShowFeedbackButton && (
         <WordcloudOverlay>
           <WordcloudContainer>
-            <ReactWordcloud words={wordcloudData} options={wordcloudOptions} />
+            {wordcloudData.length === 0 ? (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  width: '80vw',
+                  height: '60vh',
+                  maxWidth: '800px',
+                  maxHeight: '600px',
+                }}
+              >
+                <CustomText
+                  text={'피드백이 없습니다.'}
+                  fontFamily={'Korean-Air-Sans-Bold'}
+                  fontSize={'2rem'}
+                  color={COLORS.BLUE}
+                ></CustomText>
+              </div>
+            ) : (
+              <ReactWordcloud
+                words={wordcloudData}
+                options={wordcloudOptions}
+              />
+            )}
           </WordcloudContainer>
         </WordcloudOverlay>
       )}
-
       <Container style={{ opacity: showWordcloud ? 0.3 : 1 }}>
         {/* 날짜 헤더 */}
         <DateHeader>
@@ -190,11 +352,11 @@ const Details = () => {
             aria-pressed={liked}
             disabled={!isToday}
           >
-            <HeartIcon liked={liked} disabled={!isToday}>
-              {liked ? <HeartFilled /> : <HeartOutlined />}
+            <HeartIcon liked={liked.liked} disabled={!isToday}>
+              {liked.liked ? <HeartFilled /> : <HeartOutlined />}
             </HeartIcon>
             <LikeText liked={liked} disabled={!isToday}>
-              {likeCount}
+              {liked.count}
             </LikeText>
           </LikeContainer>
           {!isToday && (
@@ -212,7 +374,7 @@ const Details = () => {
         {/* 제목 섹션 */}
         <TitleSection>
           <CustomText
-            text={'불고기 덮밥'}
+            text={menuTitle}
             fontFamily={'Korean-Air-Sans-Bold'}
             fontSize={'2.2rem'}
             color={COLORS.BLUE}
@@ -222,48 +384,40 @@ const Details = () => {
 
         {/* 설명 섹션 */}
         <DescriptionSection>
-          <DescriptionItem>
-            <CustomText
-              text={'잡채'}
-              fontFamily={'Korean-Air-Sans-Regular'}
-              fontSize={'1.1rem'}
-              color={COLORS.BLACK}
-            />
-          </DescriptionItem>
-          <DescriptionItem>
-            <CustomText
-              text={'오이소박이'}
-              fontFamily={'Korean-Air-Sans-Regular'}
-              fontSize={'1.1rem'}
-              color={COLORS.BLACK}
-            />
-          </DescriptionItem>
-          <DescriptionItem>
-            <CustomText
-              text={'메밀 전병'}
-              fontFamily={'Korean-Air-Sans-Regular'}
-              fontSize={'1.1rem'}
-              color={COLORS.BLACK}
-            />
-          </DescriptionItem>
+          {menuDescription.map((item, index) => (
+            <DescriptionItem key={index}>
+              <CustomText
+                text={item}
+                fontFamily={'Korean-Air-Sans-Regular'}
+                fontSize={'1.1rem'}
+                color={COLORS.BLACK}
+              />
+            </DescriptionItem>
+          ))}
         </DescriptionSection>
 
         {/* 정보 섹션 */}
         <InfoSection>
           <InfoCard>
             <InfoLabel>배식 라인</InfoLabel>
-            <InfoValue>A 라인</InfoValue>
+            <InfoValue>{menuInfo.line}</InfoValue>
           </InfoCard>
           <InfoCard>
             <InfoLabel>칼로리</InfoLabel>
-            <InfoValue>350 kcal</InfoValue>
+            <InfoValue>{menuInfo.calories}</InfoValue>
           </InfoCard>
           <InfoCard>
             <InfoLabel>영양성분</InfoLabel>
             <NutritionContainer>
-              <NutritionItem color="#FF6B6B">탄 40g</NutritionItem>
-              <NutritionItem color="#4ECDC4">단 25g</NutritionItem>
-              <NutritionItem color="#45B7D1">지 10g</NutritionItem>
+              <NutritionItem color="#FF6B6B">
+                탄 {menuInfo.nutrition.carbs}
+              </NutritionItem>
+              <NutritionItem color="#4ECDC4">
+                단 {menuInfo.nutrition.protein}
+              </NutritionItem>
+              <NutritionItem color="#45B7D1">
+                지 {menuInfo.nutrition.fat}
+              </NutritionItem>
             </NutritionContainer>
           </InfoCard>
         </InfoSection>
@@ -280,7 +434,7 @@ const Details = () => {
               />
             </DisabledFeedbackButton>
           ) : (
-            <FeedbackButton onClick={setOpen}>
+            <FeedbackButton onClick={() => setOpen(true)}>
               <CustomText
                 text={'피드백 남기기'}
                 fontFamily={'Korean-Air-Sans-Bold'}
@@ -301,6 +455,7 @@ const Details = () => {
         )}
       </Container>
 
+      {/* 피드백 모달 */}
       {open && (
         <div
           style={{
@@ -350,7 +505,7 @@ const Details = () => {
                 justifyContent: 'flex-start',
               }}
             >
-              {feedbackOptions.map((opt) => {
+              {Object.keys(feedbackOptions).map((opt) => {
                 const isSelected = selections.includes(opt);
                 return (
                   <button
@@ -425,7 +580,53 @@ const Details = () => {
   );
 };
 
-// 워드클라우드 관련 스타일
+// 로딩 관련 스타일
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  background-color: ${COLORS.WHITE};
+`;
+
+const LoadingContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding: 3rem;
+  background-color: ${COLORS.WHITE};
+  border-radius: 24px;
+  box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid ${COLORS.BOX_BORDER};
+`;
+
+const LoadingText = styled.div`
+  text-align: center;
+`;
+
+// 에러 관련 스타일
+const ErrorContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  background-color: ${COLORS.WHITE};
+`;
+
+const ErrorContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem;
+  background-color: ${COLORS.WHITE};
+  border-radius: 24px;
+  box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid ${COLORS.BOX_BORDER};
+`;
+
+// 기존 스타일들...
 const WordcloudOverlay = styled.div`
   position: fixed;
   top: 0;

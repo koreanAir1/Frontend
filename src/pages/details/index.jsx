@@ -293,8 +293,8 @@ const Details = () => {
             aria-pressed={liked}
             disabled={!isToday}
           >
-            <HeartIcon liked={liked} disabled={!isToday}>
-              {liked ? <HeartFilled /> : <HeartOutlined />}
+            <HeartIcon liked={liked.liked} disabled={!isToday}>
+              {liked.liked ? <HeartFilled /> : <HeartOutlined />}
             </HeartIcon>
             <LikeText liked={liked} disabled={!isToday}>
               {liked.count}

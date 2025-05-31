@@ -11,6 +11,7 @@ import ReactWordcloud from 'react-wordcloud';
 import { feedbackDoneAtom } from '../../stores/atom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { menuApi } from '../../api/menu';
+import { feedbackApi } from '../../api/feedback';
 
 const Details = () => {
   const { id } = useParams();
@@ -18,7 +19,6 @@ const Details = () => {
   const [liked, setLiked] = useRecoilState(likeInfoAtomFamily(cardId));
   const [showWordcloud, setShowWordcloud] = useState(true);
   const [feedbackDone, setFeedbackDone] = useRecoilState(feedbackDoneAtom);
-  console.log('cardId:', cardId, 'liked:', liked);
   const menuDetailQuery = useQuery({
     queryKey: ['menuDetail', id],
     queryFn: () => menuApi.getMenuDetailApi(id),
@@ -46,8 +46,26 @@ const Details = () => {
     },
   });
 
+  // 피드백 전송
+  const feedbackMutation = useMutation({
+    mutationFn: async (data) => {
+      try {
+        await feedbackApi.postFeedbackApi(data);
+      } catch (error) {
+        throw new error('error');
+      }
+    },
+  });
+
+  // 피드백 조회
+  const feedbackQuery = useQuery({
+    queryKey: ['feedback', id],
+    queryFn: () => feedbackApi.getFeedbackApi(id),
+  });
+
   // 로딩 및 에러 상태 처리
   const { data: menuData, isLoading, error } = menuDetailQuery;
+  // const { data: feedbackData, isLoading1, error1 } = feedbackQuery;
 
   // 워드클라우드 데이터 - API 데이터에서 동적으로 생성하거나 기본값 사용
   const wordcloudData = menuData?.wordcloud || [
@@ -181,6 +199,15 @@ const Details = () => {
 
   const handleOk = () => {
     console.log('선택된 피드백:', selections);
+    const feedbackType = selections.map((key) => feedbackOptions[key]); // 문자열 배열 생성
+
+    console.log('전송할 피드백:', feedbackType);
+
+    feedbackMutation.mutate({
+      feedbackType,
+      menuId: Number(id),
+    });
+
     setSelections([]);
     setFeedbackDone(true);
     setOpen(false);
@@ -191,14 +218,16 @@ const Details = () => {
     setOpen(false);
   };
 
-  const feedbackOptions = [
-    '짜다',
-    '맵다',
-    '달다',
-    '양이 적다',
-    '양이 많다',
-    '맛있다',
-  ];
+  const feedbackOptions = {
+    짜다: 'salty',
+    맵다: 'spicy',
+    달다: 'sweet',
+    '양이 적다': 'less',
+    '양이 많다': 'much',
+    맛있다: 'good',
+    보통: 'soso',
+    맛없다: 'bad',
+  };
 
   // 로딩 상태 처리
   if (isLoading) {
@@ -446,7 +475,7 @@ const Details = () => {
                 justifyContent: 'flex-start',
               }}
             >
-              {feedbackOptions.map((opt) => {
+              {Object.keys(feedbackOptions).map((opt) => {
                 const isSelected = selections.includes(opt);
                 return (
                   <button

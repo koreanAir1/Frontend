@@ -1,8 +1,11 @@
 import instance from '..';
 
 export const feedbackApi = {
-  postFeedbackApi: (menuId) => {
-    return instance.post('/feedback', { menuId: menuId });
+  postFeedbackApi: (feedbackType, menuId) => {
+    return instance.post('/feedback', {
+      feedbackType,
+      menuId,
+    });
   },
   getFeedbackApi: (menuId) => {
     return instance.get(`/api/feedback/${menuId}`);

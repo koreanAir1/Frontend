@@ -173,6 +173,7 @@ const Home = () => {
           </div>
         ) : (
           weeklyMenuList.map((dayMenu, index) => {
+            console.log(dayMenu);
             return (
               <Container key={index}>
                 <div
@@ -213,7 +214,7 @@ const Home = () => {
                             key={menuInfo.idMenu}
                             imgUrl={menuInfo.menuImgUrl}
                             title={menuInfo.menuName}
-                            description={dayMenu.lines}
+                            description={`${menu?.lines} 라인`}
                             id={menuInfo.idMenu}
                             isRank={false}
                           />

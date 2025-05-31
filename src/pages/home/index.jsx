@@ -25,8 +25,13 @@ const Home = () => {
       return menuApi.getTodayMenuApi(weekday);
     },
   });
+  const weeklyMenuQuery = useQuery({
+    queryKey: ['weeklyMenu'],
+    queryFn: () => menuApi.getWeeklyMenuApi(),
+  });
 
   const todayMenuList = todayMenuQuery.data?.data?.data;
+  const weeklyMenuList = weeklyMenuQuery?.data?.data?.data || [];
   const setAllIds = useSetRecoilState(allIdsAtom);
   const initializeLikes = useRecoilCallback(
     ({ set, snapshot }) =>
@@ -47,7 +52,7 @@ const Home = () => {
       },
     [],
   );
-
+  const isLoading = weeklyMenuQuery?.isLoading;
   useEffect(() => {
     if (todayMenuList && todayMenuList.length > 0) {
       // allIdsAtom 세팅
@@ -57,6 +62,7 @@ const Home = () => {
       initializeLikes(todayMenuList);
     }
   }, [todayMenuList, setAllIds, initializeLikes]);
+
   return (
     <>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '2vw' }}>
@@ -101,23 +107,25 @@ const Home = () => {
               </div>
             ) : todayMenuList && todayMenuList.length > 0 ? (
               <div>
-                {todayMenuList.map((menu, index) => (
-                  <div
-                    key={menu.idMenu}
-                    style={{ display: 'inline-block', marginRight: '3vw' }}
-                  >
-                    <CustomCard
+                {todayMenuList.map((menu, index) => {
+                  return (
+                    <div
                       key={menu.idMenu}
-                      imgUrl={menu.menuImgUrl}
-                      title={menu.menuName}
-                      description={`${menu.menuLine} 라인`}
-                      id={menu.idMenu}
-                      isRank={true}
-                      rankNumber={index + 1}
-                      likeNumber={menu.menuLiked}
-                    />
-                  </div>
-                ))}
+                      style={{ display: 'inline-block', marginRight: '3vw' }}
+                    >
+                      <CustomCard
+                        key={menu.idMenu}
+                        imgUrl={menu.menuImgUrl}
+                        title={menu.menuName}
+                        description={`${menu.menuLine} 라인`}
+                        id={menu.idMenu}
+                        isRank={true}
+                        rankNumber={index + 1}
+                        likeNumber={menu.menuLiked}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div
@@ -137,33 +145,86 @@ const Home = () => {
             )}
           </div>
         </Container>
-
-        {[1, 2, 3, 4, 5, 6].map((containerId) => (
-          <Container key={containerId}>
-            <div
-              style={{ display: 'flex', flexDirection: 'column', gap: '2vw' }}
-            >
-              <CustomText
-                text={'2025년 5월 30일'}
-                fontFamily={'Korean-Air-Sans-Bold'}
-                fontSize={'1.3rem'}
-                color={COLORS.BLACK}
+        {isLoading ? (
+          <Spin
+            indicator={
+              <LoadingOutlined
+                style={{ fontSize: 48, color: COLORS.BLUE }}
+                spin
               />
-              <div style={{ display: 'flex', gap: '3vw' }}>
-                {[1, 2, 3, 4, 5].map((id) => (
-                  <CustomCard
-                    key={id}
-                    imgUrl={''}
-                    title={'안유진'}
-                    description={'양재혁'}
-                    id={id}
-                    isRank={false}
+            }
+            size="large"
+          />
+        ) : weeklyMenuList.length === 0 ? (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+              height: '200px',
+              fontFamily: 'Korean-Air-Sans-Bold',
+              color: COLORS.BLUE,
+              fontSize: '1.5rem',
+            }}
+          >
+            메뉴가 준비 중입니다.
+          </div>
+        ) : (
+          weeklyMenuList.map((dayMenu, index) => {
+            return (
+              <Container key={index}>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '2vw',
+                  }}
+                >
+                  <CustomText
+                    text={dayMenu.menus?.[0]?.menuInfo?.menuDate}
+                    fontFamily={'Korean-Air-Sans-Bold'}
+                    fontSize={'1.3rem'}
+                    color={COLORS.BLACK}
                   />
-                ))}
-              </div>
-            </div>
-          </Container>
-        ))}
+                  <div style={{ display: 'flex', gap: '3vw' }}>
+                    {dayMenu.menus.length === 0 ? (
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          width: '100%',
+                          height: '200px',
+                          fontFamily: 'Korean-Air-Sans-Bold',
+                          color: COLORS.BLUE,
+                          fontSize: '1.5rem',
+                        }}
+                      >
+                        메뉴가 준비 중입니다.
+                      </div>
+                    ) : (
+                      dayMenu.menus.map((menu) => {
+                        const menuInfo = menu.menuInfo;
+                        console.log(menuInfo);
+                        return (
+                          <CustomCard
+                            key={menuInfo.idMenu}
+                            imgUrl={menuInfo.menuImgUrl}
+                            title={menuInfo.menuName}
+                            description={dayMenu.lines}
+                            id={menuInfo.idMenu}
+                            isRank={false}
+                          />
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              </Container>
+            );
+          })
+        )}
       </div>
 
       <div style={{ position: 'fixed', bottom: 30, right: 70, zIndex: 1000 }}>

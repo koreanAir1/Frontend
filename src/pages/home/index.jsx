@@ -14,10 +14,15 @@ import { useEffect } from 'react';
 
 const Home = () => {
   const navigate = useNavigate();
-  const weekday = 'MON';
-  // const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI'];
-  // const today = new Date();
-  // const weekday = days[today.getDay()];
+  const days = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
+  const today = new Date();
+  const kst = new Date(
+    today.getTime() + today.getTimezoneOffset() * 60000 + 9 * 3600000,
+  );
+  const dayIndex = kst.getDay(); // 0:일, 1:월, 2:화, 3:수, 4:목, 5:금, 6:토
+
+  // 월~금만 처리 (1~5)
+  const weekday = dayIndex >= 1 && dayIndex <= 5 ? days[dayIndex - 1] : null;
   const todayMenuQuery = useQuery({
     queryKey: ['todayMenu', weekday],
     queryFn: ({ queryKey }) => {

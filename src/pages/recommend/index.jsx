@@ -16,6 +16,7 @@ const Recommend = () => {
       }
     },
     onSuccess: (data) => {
+      setThisMenu(data?.data?.data?.menu);
       setResult(data?.data?.data?.description);
     },
   });
@@ -33,6 +34,7 @@ const Recommend = () => {
   const [comment, setComment] = useState('');
 
   const [result, setResult] = useState('');
+  const [thisMenu, setThisMenu] = useState('');
   const today = new Date();
   const kst = new Date(
     today.getTime() + today.getTimezoneOffset() * 60000 + 9 * 3600000,
@@ -112,6 +114,7 @@ const Recommend = () => {
                 type="button"
                 onClick={() => {
                   setResult('');
+                  setThisMenu('');
                   setIsOpen(true);
                 }}
                 style={{
@@ -133,8 +136,13 @@ const Recommend = () => {
 
             {/* 추천 음식 텍스트 영역 */}
             <textarea
-              value={result === '' ? '입력 중...' : result}
-              text={result}
+              value={
+                result === ''
+                  ? '입력 중...'
+                  : thisMenu
+                  ? `🍽️ 추천 메뉴: ${thisMenu}\n\n${result}`
+                  : result
+              }
               style={{
                 width: 'calc(100% - 24px)',
                 height: '200px',

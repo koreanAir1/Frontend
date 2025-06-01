@@ -126,6 +126,7 @@ const Details = () => {
     menuData?.data?.data?.menuImgUrl || '/assets/images/defaultImage.png';
   const dateText = menuData?.data?.data?.menuDate;
   const menuTitle = menuData?.data?.data?.menuName;
+  const menuItems = menuTitle?.split(', ') || [];
   const menuDescription =
     commonMenu.length > 0 ? commonMenu.map((item) => item.commonName) : [];
 
@@ -373,12 +374,18 @@ const Details = () => {
 
         {/* 제목 섹션 */}
         <TitleSection>
-          <CustomText
-            text={menuTitle}
-            fontFamily={'Korean-Air-Sans-Bold'}
-            fontSize={'2.2rem'}
-            color={COLORS.BLUE}
-          />
+          <MenuTagContainer>
+            {menuItems.map((item, index) => (
+              <MenuTag key={index}>
+                <CustomText
+                  text={item.trim()}
+                  fontFamily={'Korean-Air-Sans-Bold'}
+                  fontSize={'1.8rem'}
+                  color={COLORS.WHITE}
+                />
+              </MenuTag>
+            ))}
+          </MenuTagContainer>
           <TitleDivider />
         </TitleSection>
 
@@ -579,6 +586,27 @@ const Details = () => {
     </>
   );
 };
+
+const MenuTagContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+  justify-content: flex-start; // 또는 center
+`;
+
+const MenuTag = styled.div`
+  background: ${COLORS.BLUE};
+  padding: 0.6rem 1.2rem;
+  border-radius: 20px; // 둥근 태그
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+`;
 
 // 로딩 관련 스타일
 const LoadingContainer = styled.div`

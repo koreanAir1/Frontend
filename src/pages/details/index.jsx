@@ -149,7 +149,10 @@ const Details = () => {
 
   const nutritionData = parseNutrition(menuData?.data?.data?.menuNutri);
   const menuInfo = {
-    line: `${menuData?.data?.data?.menuLine} 라인`,
+    line:
+      menuData?.data?.data?.menuLine === 'GRAB'
+        ? 'GRAB & GO'
+        : `${menuData?.data?.data?.menuLine} 라인`,
     calories: `${menuData?.data?.data?.menuKcal} kcal`,
     nutrition: nutritionData,
   };
@@ -415,17 +418,33 @@ const Details = () => {
           </InfoCard>
           <InfoCard>
             <InfoLabel>영양성분</InfoLabel>
-            <NutritionContainer>
-              <NutritionItem color="#FF6B6B">
-                탄 {menuInfo.nutrition.carbs}
-              </NutritionItem>
-              <NutritionItem color="#4ECDC4">
-                단 {menuInfo.nutrition.protein}
-              </NutritionItem>
-              <NutritionItem color="#45B7D1">
-                지 {menuInfo.nutrition.fat}
-              </NutritionItem>
-            </NutritionContainer>
+            {menuData?.data?.data?.menuLine === 'GRAB' ? (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: '16px',
+                  color: '#666',
+                  fontSize: '14px',
+                  fontStyle: 'italic',
+                }}
+              >
+                GRAB & GO는 영양성분을 제공하지 않습니다.
+              </div>
+            ) : (
+              <NutritionContainer>
+                <NutritionItem color="#FF6B6B">
+                  탄 {menuInfo.nutrition.carbs}
+                </NutritionItem>
+                <NutritionItem color="#4ECDC4">
+                  단 {menuInfo.nutrition.protein}
+                </NutritionItem>
+                <NutritionItem color="#45B7D1">
+                  지 {menuInfo.nutrition.fat}
+                </NutritionItem>
+              </NutritionContainer>
+            )}
           </InfoCard>
         </InfoSection>
 

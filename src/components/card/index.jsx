@@ -98,11 +98,8 @@ const CustomCard = ({
         return '🥈';
       case 3:
         return '🥉';
-      case 4:
-      case 5:
-        return rank;
       default:
-        return null;
+        return rank;
     }
   };
 

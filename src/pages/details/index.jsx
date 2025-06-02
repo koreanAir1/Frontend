@@ -167,6 +167,11 @@ const Details = () => {
       setShowWordcloud(false);
       return;
     }
+
+    // 즉시 표시
+    setShowWordcloud(true);
+
+    // 3초 후 숨김
     const timer = setTimeout(() => {
       setShowWordcloud(false);
     }, 3000);
